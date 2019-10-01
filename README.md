@@ -1,7 +1,7 @@
 
 # Verifie Android Client
 
-[![](https://jitpack.io/v/nazaretyan/verifie-android.svg)](https://jitpack.io/#nazaretyan/verifie-android)
+[![](https://jitpack.io/v/verifie-global/verifie-android.svg)](https://jitpack.io/#verifie-global/verifie-android)
 
 # Install
 
