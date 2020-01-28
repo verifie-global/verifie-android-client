@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Verifie</string>
+    <string name="identity_verification">Identity Verification</string>
+    <string name="passport">Passport</string>
+    <string name="you_will_take_a_picture_of_it_in_the_next_step">You will take a picture of it in the next step.</string>
+    <string name="select_a_document">Select a Document</string>
+    <string name="driving_license">Driving License</string>
+    <string name="national_identity_card">National Identity Card</string>
+    <string name="residence_permit_card">Residence Permit Card</string>
+    <string name="page_info_passport">Passport Face Page</string>
+    <string name="page_info_id_card">Front of card</string>
+    <string name="page_info_residence_card">Residence Permit Card Page</string>
+    <string name="scan_info_passport">Position the page with your photo in the frame</string>
+    <string name="scan_info_id_card">Position the front of your card in the frame</string>
+    <string name="scan_info_residence_card">Position the page with your photo in frame</string>
+    <string name="scan_backside_of_doc">Back of card</string>
+    <string name="scan_backside_of_doc_info">Position the back of your card in the frame</string>
+    <string name="verification_result">Verification Result</string>
+    <string name="images">Images</string>
+    <string name="images_data">Images Data</string>
+    <string name="document_info">Document Info</string>
+</resources>
