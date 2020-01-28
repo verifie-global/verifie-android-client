@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="preview_holder" type="id"/>
+    <item name="img_captured_document" type="id"/>
+
+</resources>
