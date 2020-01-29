@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'digital.wup.android-maven-publish'
+group='com.github.verifie-global'
 
 android {
     compileSdkVersion 28
