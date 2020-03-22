@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
+import com.verifie.android.DocType;
 import com.verifie.android.Verifie;
 import com.verifie.android.VerifieCallback;
 import com.verifie.android.VerifieColorConfig;
@@ -112,19 +113,23 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         VerifieColorConfig colorConfig = new VerifieColorConfig();
         colorConfig.setDocCropperFrameColor(Color.WHITE);
 
-        VerifieConfig config = new VerifieConfig("licenseKey", "personId");
+//        VerifieConfig config = new VerifieConfig("licenseKey", "personId");
+        VerifieConfig config = new VerifieConfig("5d3f2e38-fe7c-43c6-b532-db9b57e674f8", "12");
         config.setColorConfig(colorConfig);
         VerifieTextConfig textConfig = new VerifieTextConfig();
+        config.setDocType(DocType.DOC_TYPE_PASSPORT);
         String text = getString(R.string.passport);
         String pageInfo = getString(R.string.page_info_passport);
         String scanInfo = getString(R.string.scan_info_passport);
         switch (docType) {
             case Constants.DocTypes.NATIONAL_ID:
+                config.setDocType(DocType.DOC_TYPE_ID_CARD);
                 text = getString(R.string.national_identity_card);
                 pageInfo = getString(R.string.page_info_id_card);
                 scanInfo = getString(R.string.scan_info_id_card);
                 break;
             case Constants.DocTypes.RESIDENCE_PERMIT:
+                config.setDocType(DocType.DOC_TYPE_RESIDENCE_PERMIT);
                 text = getString(R.string.residence_permit_card);
                 pageInfo = getString(R.string.page_info_id_card);
                 scanInfo = getString(R.string.scan_info_id_card);

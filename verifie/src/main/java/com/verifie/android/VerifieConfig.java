@@ -16,25 +16,60 @@ public class VerifieConfig implements Parcelable {
     private String languageCode;
     private VerifieTextConfig textConfig;
     private VerifieColorConfig colorConfig;
+    private DocType docType;
 
     private Class<? extends BaseDocumentScannerFragment> documentScannerFragment = DefaultDocumentScannerFragment.class;
     private Class<? extends FaceDetectorGmsFragment> faceDetectorFragment = FaceDetectorGmsFragment.class;
 
-    public VerifieConfig(String licenseKey, String personId) {
+    public VerifieConfig(String licenseKey, String personId, DocType docType) {
         this.licenseKey = licenseKey;
         this.personId = personId;
         this.languageCode = DEFAULT_LANGUAGE_CODE;
         this.textConfig = VerifieTextConfig.defaultConfig();
         this.colorConfig = VerifieColorConfig.defaultConfig();
+        this.docType = docType;
     }
 
-    protected VerifieConfig(Parcel in) {
-        this.licenseKey = in.readString();
-        this.personId = in.readString();
-        this.languageCode = in.readString();
-        this.textConfig = in.readParcelable(VerifieTextConfig.class.getClassLoader());
-        this.colorConfig = in.readParcelable(VerifieColorConfig.class.getClassLoader());
+    public VerifieConfig(String licenseKey, String personId) {
+        this(licenseKey, personId, DocType.DOC_TYPE_ID_CARD);
     }
+
+
+    protected VerifieConfig(Parcel in) {
+        licenseKey = in.readString();
+        personId = in.readString();
+        languageCode = in.readString();
+        textConfig = in.readParcelable(VerifieTextConfig.class.getClassLoader());
+        colorConfig = in.readParcelable(VerifieColorConfig.class.getClassLoader());
+        docType = DocType.valueOf(in.readString());
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(licenseKey);
+        dest.writeString(personId);
+        dest.writeString(languageCode);
+        dest.writeParcelable(textConfig, flags);
+        dest.writeParcelable(colorConfig, flags);
+        dest.writeString(docType.name());
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<VerifieConfig> CREATOR = new Creator<VerifieConfig>() {
+        @Override
+        public VerifieConfig createFromParcel(Parcel in) {
+            return new VerifieConfig(in);
+        }
+
+        @Override
+        public VerifieConfig[] newArray(int size) {
+            return new VerifieConfig[size];
+        }
+    };
 
     public String getLicenseKey() {
         return licenseKey;
@@ -97,6 +132,14 @@ public class VerifieConfig implements Parcelable {
         this.faceDetectorFragment = faceDetectorFragment;
     }
 
+    public DocType getDocType() {
+        return docType;
+    }
+
+    public void setDocType(DocType docType) {
+        this.docType = docType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -112,6 +155,8 @@ public class VerifieConfig implements Parcelable {
             return false;
         if (textConfig != null ? !textConfig.equals(config.textConfig) : config.textConfig != null)
             return false;
+        if (docType != null ? !docType.equals(config.docType) : config.docType != null)
+            return false;
         return colorConfig != null ? colorConfig.equals(config.colorConfig) : config.colorConfig == null;
     }
 
@@ -122,6 +167,7 @@ public class VerifieConfig implements Parcelable {
         result = 31 * result + (languageCode != null ? languageCode.hashCode() : 0);
         result = 31 * result + (textConfig != null ? textConfig.hashCode() : 0);
         result = 31 * result + (colorConfig != null ? colorConfig.hashCode() : 0);
+        result = 31 * result + (docType != null ? docType.hashCode() : 0);
         return result;
     }
 
@@ -133,32 +179,9 @@ public class VerifieConfig implements Parcelable {
                 ", languageCode='" + languageCode + '\'' +
                 ", textConfig=" + textConfig +
                 ", colorConfig=" + colorConfig +
+                ", docType=" + docType +
                 '}';
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.licenseKey);
-        dest.writeString(this.personId);
-        dest.writeString(this.languageCode);
-        dest.writeParcelable(this.textConfig, flags);
-        dest.writeParcelable(this.colorConfig, flags);
-    }
-
-    public static final Parcelable.Creator<VerifieConfig> CREATOR = new Parcelable.Creator<VerifieConfig>() {
-        @Override
-        public VerifieConfig createFromParcel(Parcel source) {
-            return new VerifieConfig(source);
-        }
-
-        @Override
-        public VerifieConfig[] newArray(int size) {
-            return new VerifieConfig[size];
-        }
-    };
 }

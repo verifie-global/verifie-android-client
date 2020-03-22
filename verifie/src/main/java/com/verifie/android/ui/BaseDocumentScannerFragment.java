@@ -252,7 +252,12 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
     }
 
     private void handleDocument(Document document) {
-        if (!document.isDocumentValid()) {
+        if (document.getDocumentType() == null || !config.getDocType().getName().equalsIgnoreCase(document.getDocumentType())) {
+            new AlertDialog.Builder(getActivity())
+                    .setMessage("Invalid document")
+                    .setPositiveButton("OK", null)
+                    .show();
+        } else if (!document.isDocumentValid()) {
             new AlertDialog.Builder(getActivity())
                     .setMessage("Please take a document photo again.")
                     .setPositiveButton("OK", null)
