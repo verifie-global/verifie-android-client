@@ -79,7 +79,9 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     }
 
     private void getArguments() {
-        Intent intent = getIntent();
+        Intent intent = getIntent(
+
+        );
         if (intent != null) {
             Bundle bundle = intent.getExtras();
             if (bundle != null && bundle.get(Constants.DocTypes.KEY) != null) {
@@ -122,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
                 pageInfo = getString(R.string.page_info_id_card);
                 scanInfo = getString(R.string.scan_info_id_card);
                 break;
-            case Constants.DocTypes.RESISDENCE_PERMIT:
+            case Constants.DocTypes.RESIDENCE_PERMIT:
                 text = getString(R.string.residence_permit_card);
                 pageInfo = getString(R.string.page_info_id_card);
                 scanInfo = getString(R.string.scan_info_id_card);

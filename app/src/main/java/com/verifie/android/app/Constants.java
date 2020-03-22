@@ -6,6 +6,6 @@ public interface Constants {
         int PASSPORT = 0;
         int DRIVING_LICENSE = 1;
         int NATIONAL_ID = 2;
-        int RESISDENCE_PERMIT = 3;
+        int RESIDENCE_PERMIT = 3;
     }
 }
