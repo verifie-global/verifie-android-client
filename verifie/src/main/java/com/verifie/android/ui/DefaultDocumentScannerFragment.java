@@ -160,6 +160,12 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
     }
 
     @Override
+    protected void hideCapturedImage() {
+        super.hideCapturedImage();
+        hideProgress();
+    }
+
+    @Override
     public void onDocumentScanFinished(boolean nextPageRequired) {
         if (nextPageRequired) {
             txtPageInfo.setText(config.getTextConfig().getIdBackside());

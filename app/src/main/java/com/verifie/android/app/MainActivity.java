@@ -113,8 +113,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         VerifieColorConfig colorConfig = new VerifieColorConfig();
         colorConfig.setDocCropperFrameColor(Color.WHITE);
 
-//        VerifieConfig config = new VerifieConfig("licenseKey", "personId");
-        VerifieConfig config = new VerifieConfig("5d3f2e38-fe7c-43c6-b532-db9b57e674f8", "12");
+        VerifieConfig config = new VerifieConfig("licenseKey", "personId");
         config.setColorConfig(colorConfig);
         VerifieTextConfig textConfig = new VerifieTextConfig();
         config.setDocType(DocType.DOC_TYPE_PASSPORT);
