@@ -23,7 +23,7 @@ allprojects {
 **Step 2.** Add the dependency
 
 ```gradle
-implementation 'com.github.verifie-global:verifie-android-client:v1.0.5'
+implementation 'com.github.verifie-global:verifie-android-client:v1.0.7'
 ```
 
 # Usage
@@ -36,7 +36,7 @@ VerifieTextConfig textConfig = new VerifieTextConfig();
 textConfig.setMovePhoneCloser("Move phone closer");  
 ...
 
-VerifieConfig config = new VerifieConfig("licenseKey", "personId");
+VerifieConfig config = new VerifieConfig("licenseKey", "personId", docType);
 config.setColorConfig(colorConfig);
 config.setTextConfig(textConfig);
 
