@@ -13,13 +13,17 @@ allprojects {
 		...
 		maven { url 'https://jitpack.io' }
 	}
+	
+	aaptOptions {
+        	noCompress "tflite"
+    	}
 }
 ```
 
 **Step 2.** Add the dependency
 
 ```gradle
-implementation 'com.github.verifie-global:verifie-android:1.0.4'
+implementation 'com.github.verifie-global:verifie-android-client:v1.0.5'
 ```
 
 # Usage
