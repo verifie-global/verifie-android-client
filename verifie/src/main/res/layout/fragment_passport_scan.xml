@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.PassportScanFragment">
+
+
+    <com.otaliastudios.cameraview.CameraView
+        android:id="@+id/camera"
+        android:keepScreenOn="true"
+        android:layout_width="match_parent"
+        app:cameraExperimental="false"
+        app:cameraEngine="camera1"
+        app:cameraMode="picture"
+        app:cameraAudio="off"
+        app:cameraPlaySounds="false"
+        android:layout_height="match_parent"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/top_area"
+        android:layout_width="match_parent"
+        android:layout_height="126dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_back"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/btn_back"
+            tools:text="Passport" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <LinearLayout
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:gravity="center"
+            android:id="@+id/txt_page_info"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:textColor="#ffffff"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            tools:text="Passport Face Page" />
+
+
+        <TextView
+            android:gravity="center"
+            android:id="@+id/txt_scan_info"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="45dp"
+            android:layout_marginEnd="43dp"
+            android:layout_marginStart="43dp"
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:textColor="#ffffff"
+            android:textSize="20sp"
+            tools:text="Position the page with your photo in frame" />
+    </LinearLayout>
+
+
+
+    <ScrollView
+        android:id="@+id/layout_recommendation_passport_page"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#A6BDBDBD"
+        android:elevation="40dp"
+        android:visibility="invisible">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/btn_back_recommend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:padding="10dp"
+                android:src="@drawable/ic_back"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/title_recommendation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="30dp"
+                android:layout_marginEnd="30dp"
+                android:gravity="center"
+                android:text="@string/recommendations"
+                android:textAlignment="center"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/btn_back_recommend"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/btn_back_recommend" />
+
+            <TextView
+                android:id="@+id/txt_light_evenly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="36dp"
+                android:gravity="center"
+                android:text="@string/light_face_evenly"
+                android:textColor="#ffffff"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@+id/title_recommendation" />
+
+            <LinearLayout
+                android:id="@+id/layout_recommendation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/txt_light_evenly">
+
+                <include
+                    android:id="@+id/recommendation_great"
+                    layout="@layout/item_recommendation" />
+
+                <include
+                    android:id="@+id/recommendation_no_glasses"
+                    layout="@layout/item_recommendation" />
+
+                <include
+                    android:id="@+id/recommendation_no_shadow"
+                    layout="@layout/item_recommendation" />
+
+                <include
+                    android:id="@+id/recommendation_no_flash"
+                    layout="@layout/item_recommendation" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_continue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="50dp"
+                android:layout_marginEnd="24dp"
+                android:background="@drawable/bordered_background"
+                android:text="@string/continue_key"
+                android:textAllCaps="false"
+                android:textColor="#ffffff"
+                android:textSize="24sp"
+                app:layout_constraintTop_toBottomOf="@+id/layout_recommendation" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

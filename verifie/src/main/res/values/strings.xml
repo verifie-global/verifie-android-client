@@ -21,4 +21,9 @@
     <string name="position_your_face_in_the_oval">Position your face in the oval</string>
     <string name="scan_document">Scan Document</string>
     <string name="now_place_your_phone_directly_on_top_of_your_document_so_we_can_connect_securely">Place your phone directly on top of your document as shown in the picture below.</string>
+    <string name="tfe_od_app_name" translatable="false" translation_description="Object Detection demo app [CHAR_LIMIT=40]">TFL Detect</string>
+    <string name="tfe_od_camera_error" translatable="false" translation_description="Error regarding camera support[CHAR_LIMIT=40]">This device</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

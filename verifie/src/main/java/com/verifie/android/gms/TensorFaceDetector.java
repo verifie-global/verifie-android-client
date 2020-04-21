@@ -43,12 +43,7 @@ public class TensorFaceDetector {
     private PriorityQueue<Map.Entry<String, Float>> sortedLabels =
             new PriorityQueue<>(
                     RESULTS_TO_SHOW,
-                    new Comparator<Map.Entry<String, Float>>() {
-                        @Override
-                        public int compare(Map.Entry<String, Float> o1, Map.Entry<String, Float> o2) {
-                            return (o1.getValue()).compareTo(o2.getValue());
-                        }
-                    });
+                    (o1, o2) -> (o1.getValue()).compareTo(o2.getValue()));
 
 
     public TensorFaceDetector(Activity activity) {

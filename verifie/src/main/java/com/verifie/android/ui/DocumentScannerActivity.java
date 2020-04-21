@@ -8,12 +8,15 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+
 import android.util.DisplayMetrics;
 
+import com.google.android.gms.vision.Frame;
 import com.verifie.android.R;
 import com.verifie.android.VerifieConfig;
 
@@ -26,7 +29,7 @@ public final class DocumentScannerActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_CAMERA = 1;
 
     private VerifieConfig config;
-    private BaseDocumentScannerFragment fragment;
+    private Fragment fragment;
 
 
     private Locale createLocale(String languageCode) {
@@ -63,9 +66,9 @@ public final class DocumentScannerActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (!((DefaultDocumentScannerFragment) fragment).isLoading()) {
+//        if (!((DefaultDocumentScannerFragment) fragment).isLoading()) {
             super.onBackPressed();
-        }
+//        }
     }
 
     @SuppressLint("MissingPermission")
@@ -103,12 +106,7 @@ public final class DocumentScannerActivity extends AppCompatActivity {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
             new AlertDialog.Builder(this)
                     .setMessage("Camera permission is required.")
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions(DocumentScannerActivity.this, new String[]{Manifest.permission.CAMERA}, REQUEST_ENABLE_CAMERA);
-                        }
-                    })
+                    .setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(DocumentScannerActivity.this, new String[]{Manifest.permission.CAMERA}, REQUEST_ENABLE_CAMERA))
                     .show();
         } else {
             ActivityCompat.requestPermissions(this,

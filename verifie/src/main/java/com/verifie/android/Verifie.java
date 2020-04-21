@@ -1,7 +1,7 @@
 package com.verifie.android;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.verifie.android.api.model.res.Document;
 import com.verifie.android.api.model.res.Score;

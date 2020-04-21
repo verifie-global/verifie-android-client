@@ -3,9 +3,12 @@ package com.verifie.android;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.fragment.app.Fragment;
+
 import com.verifie.android.ui.BaseDocumentScannerFragment;
 import com.verifie.android.ui.DefaultDocumentScannerFragment;
 import com.verifie.android.ui.FaceDetectorGmsFragment;
+import com.verifie.android.ui.PassportScanFragment;
 
 public class VerifieConfig implements Parcelable {
 
@@ -19,6 +22,7 @@ public class VerifieConfig implements Parcelable {
     private DocType docType;
 
     private Class<? extends BaseDocumentScannerFragment> documentScannerFragment = DefaultDocumentScannerFragment.class;
+    private Class<? extends PassportScanFragment> passportScannerFragment = PassportScanFragment.class;
     private Class<? extends FaceDetectorGmsFragment> faceDetectorFragment = FaceDetectorGmsFragment.class;
 
     public VerifieConfig(String licenseKey, String personId, DocType docType) {
@@ -116,7 +120,10 @@ public class VerifieConfig implements Parcelable {
         return this;
     }
 
-    public Class<? extends BaseDocumentScannerFragment> getDocumentScannerFragment() {
+    public Class<? extends Fragment> getDocumentScannerFragment() {
+        if(docType == DocType.DOC_TYPE_PASSPORT){
+            return passportScannerFragment;
+        }
         return documentScannerFragment;
     }
 

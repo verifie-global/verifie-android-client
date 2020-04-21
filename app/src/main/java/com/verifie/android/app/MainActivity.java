@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -14,6 +13,8 @@ import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.crashlytics.android.Crashlytics;
 import com.verifie.android.DocType;
@@ -89,9 +90,11 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
                 docType = bundle.getInt(Constants.DocTypes.KEY, Constants.DocTypes.PASSPORT);
             } else {
                 docType = Constants.DocTypes.PASSPORT;
+//                docType = Constants.DocTypes.NATIONAL_ID;
             }
         } else {
             docType = Constants.DocTypes.PASSPORT;
+//            docType = Constants.DocTypes.NATIONAL_ID;
         }
     }
 
@@ -100,6 +103,8 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         super.onResume();
         showDocuments();
         startVerifie();
+//        startActivity(new Intent(this, TestOcrActivity.class));
+//        startActivity(new Intent(this, FaceDetectorActivity.class));
     }
 
     private void startVerifie() {
@@ -112,8 +117,8 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
 
         VerifieColorConfig colorConfig = new VerifieColorConfig();
         colorConfig.setDocCropperFrameColor(Color.WHITE);
-
-        VerifieConfig config = new VerifieConfig("licenseKey", "personId");
+        VerifieConfig config = new VerifieConfig("5d3f2e38-fe7c-43c6-b532-db9b57e674f8", "12");
+//        VerifieConfig config = new VerifieConfig("licenseKey", "personId");
         config.setColorConfig(colorConfig);
         VerifieTextConfig textConfig = new VerifieTextConfig();
         config.setDocType(DocType.DOC_TYPE_PASSPORT);
@@ -150,7 +155,9 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     }
 
     private void hideLoading() {
-        progressDialog.dismiss();
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
     }
 
     @Override
@@ -161,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     private void showDocuments() {
         if (document == null || score == null) {
             if (isVerifyStarted) {
-                finish();
+//                finish();
             }
             return;
         }
@@ -209,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     }
 
     private void setSpannableText(TextView textView, String prefix, String suffix) {
+        if(suffix == null || suffix.isEmpty()) return;
         String wholeText = prefix + "\n" + suffix;
         SpannableString spannableString = new SpannableString(wholeText);
         int startIndex = wholeText.indexOf(suffix);
@@ -219,6 +227,10 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
 
     @Override
     public void onDocumentReceived(Document document) {
+        if(document == null){
+//            showError
+            return;
+        }
         if (document.getDocumentFaceImage() != null && !document.getDocumentFaceImage().isEmpty()) {
             documentImageBase64 = document.getDocumentFaceImage();
         }

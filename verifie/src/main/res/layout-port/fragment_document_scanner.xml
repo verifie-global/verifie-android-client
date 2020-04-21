@@ -11,170 +11,90 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <FrameLayout
-        android:id="@+id/doc_scan_layout"
+    <ImageView
+        android:id="@+id/cropped_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/top_area"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="126dp">
 
-        <FrameLayout
-            android:id="@+id/cropper_frame_holder"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_back"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/btn_back"
+            tools:text="Passport" />
 
-                <android.support.constraint.ConstraintLayout
-                    android:id="@+id/top_area"
-                    android:layout_width="match_parent"
-                    android:layout_height="126dp"
-                    android:background="#3F000000">
-
-                    <ImageView
-                        android:id="@+id/btn_back"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:padding="10dp"
-                        android:src="@drawable/ic_back"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginStart="30dp"
-                        android:layout_marginEnd="30dp"
-                        android:gravity="center"
-                        android:textAlignment="center"
-                        android:textColor="@android:color/white"
-                        android:textSize="20sp"
-                        app:layout_constraintBottom_toBottomOf="@+id/btn_back"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="@+id/btn_back"
-                        tools:text="Passport" />
-
-                </android.support.constraint.ConstraintLayout>
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="244dp">
-
-                    <View
-                        android:id="@+id/middle_left_area"
-                        android:layout_width="16dp"
-                        android:layout_height="match_parent"
-                        android:background="#3F000000" />
-
-                    <ImageView
-                        android:id="@+id/img_captured_document"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_toStartOf="@+id/middle_right_area"
-                        android:layout_toLeftOf="@+id/middle_right_area"
-                        android:layout_toEndOf="@+id/middle_left_area"
-                        android:layout_toRightOf="@+id/middle_left_area"
-                        android:visibility="gone" />
-
-                    <View
-                        android:id="@+id/cropper_frame"
-                        android:layout_width="match_parent"
-                        android:layout_height="244dp"
-                        android:layout_toStartOf="@+id/middle_right_area"
-                        android:layout_toLeftOf="@+id/middle_right_area"
-                        android:layout_toEndOf="@+id/middle_left_area"
-                        android:layout_toRightOf="@+id/middle_left_area"
-                        android:background="@drawable/rounded_doc_frame" />
-
-                    <View
-                        android:id="@+id/middle_right_area"
-                        android:layout_width="16dp"
-                        android:layout_height="match_parent"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentRight="true"
-                        android:background="#3F000000" />
-
-                </RelativeLayout>
-
-                <View
-                    android:id="@+id/bottom_area"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="#3F000000" />
-
-            </LinearLayout>
-
-        </FrameLayout>
-
-        <View
-            android:id="@+id/camera_overlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-        <LinearLayout
+    <com.verifie.android.ui.widget.FrameOverlay
+        android:id="@+id/cropper_frame_holder_id_card"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+    <View
+        android:id="@+id/camera_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txt_page_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|bottom"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/txt_page_info"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textColor="#ffffff"
-                android:textSize="26sp"
-                android:textStyle="bold"
-                tools:text="Passport Face Page" />
+            android:gravity="center"
+            android:textColor="#ffffff"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            tools:text="Passport Face Page" />
 
 
-            <TextView
-                android:id="@+id/txt_scan_info"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="43dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="43dp"
-                android:layout_marginBottom="45dp"
-                android:gravity="center"
-                android:textColor="#ffffff"
-                android:textSize="20sp"
-                tools:text="Position the page with your photo in frame" />
-
-            <ImageView
-                android:id="@+id/btn_capture"
-                android:layout_width="66dp"
-                android:layout_height="66dp"
-                android:layout_gravity="center_horizontal|bottom"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/outer_circle"
-                android:padding="10dp"
-                android:src="@drawable/capture_selector" />
-        </LinearLayout>
-
-
-        <FrameLayout
-            android:id="@+id/progress_bar_holder"
+        <TextView
+            android:id="@+id/txt_scan_info"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clickable="true"
-            android:visibility="gone">
+            android:layout_height="wrap_content"
+            android:layout_marginStart="43dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="43dp"
+            android:layout_marginBottom="45dp"
+            android:gravity="center"
+            android:textColor="#ffffff"
+            android:textSize="20sp"
+            tools:text="Position the page with your photo in frame" />
+    </LinearLayout>
 
-            <ProgressBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center" />
-
-        </FrameLayout>
-
-    </FrameLayout>
 
     <ScrollView
         android:id="@+id/layout_recommendations_container"
@@ -183,7 +103,7 @@
         android:background="#A6BDBDBD"
         android:visibility="gone">
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -266,6 +186,6 @@
                 android:textSize="24sp"
                 app:layout_constraintTop_toBottomOf="@+id/layout_recommendation" />
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 </FrameLayout>
