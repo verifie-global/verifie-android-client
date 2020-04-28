@@ -263,7 +263,9 @@ public class MrzScanFragment extends Fragment {
             if (preview != null) {
                 previewSize = preview.getSurfaceSize();
             }
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
     }
