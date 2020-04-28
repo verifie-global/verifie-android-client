@@ -92,6 +92,7 @@ public class Document {
     }
 
     public String getGender() {
+        if (gender == null) return "";
         return gender.toLowerCase().equals("f") ? "Female" : "Male";
     }
 
@@ -167,13 +168,16 @@ public class Document {
     }
 
     private String capitalize(String str) {
-        if (str.isEmpty()) {
-            return str;
+        if (str == null || str.isEmpty()) {
+            return "";
         }
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
     private String getFormattedDate(String unformatted) {
+        if (unformatted == null) {
+            return "";
+        }
         if (unformatted.contains("-")) {
             return unformatted.replace("-", "/");
         }

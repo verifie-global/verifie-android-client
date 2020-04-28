@@ -3,15 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.FaceDetectorGmsFragment">
 
 
     <com.verifie.android.gms.CameraSourcePreview
         android:id="@+id/preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </com.verifie.android.gms.CameraSourcePreview>
+        android:layout_height="match_parent"/>
 
 
     <ImageView
@@ -21,12 +20,10 @@
         android:adjustViewBounds="true"
         android:scaleType="fitXY" />
 
-    <ImageView
+    <com.verifie.android.ui.widget.OvalOverlayView
+        android:id="@+id/oval_overlay_animation"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
-        android:scaleType="fitXY"
-        android:src="@drawable/ic_face_frame" />
+        android:layout_height="match_parent"/>
 
     <TextView
         android:id="@+id/tv_info"
@@ -39,21 +36,96 @@
         android:text="@string/position_your_face_in_the_oval"
         android:textSize="20sp" />
 
-    <FrameLayout
-        android:id="@+id/progress_bar_holder"
+    <ScrollView
+        android:id="@+id/layout_recommendation_passport_page"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#90000000"
-        android:clickable="true"
-        android:visibility="gone"
-        tools:visibility="visible">
+        android:background="#A6BDBDBD"
+        android:elevation="40dp"
+        android:visibility="visible">
 
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    </FrameLayout>
+            <ImageView
+                android:id="@+id/btn_back_recommend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:padding="10dp"
+                android:src="@drawable/ic_back"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
+            <TextView
+                android:id="@+id/title_recommendation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="30dp"
+                android:layout_marginEnd="30dp"
+                android:gravity="center"
+                android:text="@string/recommendations"
+                android:textAlignment="center"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/btn_back_recommend"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/btn_back_recommend" />
 
+            <TextView
+                android:id="@+id/txt_light_evenly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_20sdp"
+                android:gravity="center"
+                android:text="@string/light_face_evenly"
+                android:textColor="#ffffff"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@+id/title_recommendation" />
+
+            <LinearLayout
+                android:id="@+id/layout_recommendation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/txt_light_evenly">
+
+                <include
+                    android:id="@+id/recommendation_great"
+                    layout="@layout/item_recommendation" />
+
+                <include
+                    android:id="@+id/recommendation_no_glasses"
+                    layout="@layout/item_recommendation" />
+
+                <include
+                    android:id="@+id/recommendation_no_shadow"
+                    layout="@layout/item_recommendation" />
+
+                <include
+                    android:id="@+id/recommendation_no_flash"
+                    layout="@layout/item_recommendation" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_continue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="50dp"
+                android:layout_marginEnd="24dp"
+                android:background="@drawable/bordered_background"
+                android:text="@string/continue_key"
+                android:textAllCaps="false"
+                android:textColor="#ffffff"
+                android:textSize="24sp"
+                app:layout_constraintTop_toBottomOf="@+id/layout_recommendation" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
 </FrameLayout>

@@ -1,41 +1,36 @@
 package com.verifie.android.ui;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
-import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.YuvImage;
+import android.graphics.RectF;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.media.ExifInterface;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
+import android.os.HandlerThread;
 import android.util.Log;
+import android.util.Size;
+import android.view.Surface;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.CallSuper;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import com.verifie.android.DocType;
 import com.verifie.android.OperationsManager;
 import com.verifie.android.R;
 import com.verifie.android.VerifieConfig;
 import com.verifie.android.api.model.res.Document;
 import com.verifie.android.api.model.res.ResponseModel;
+import com.verifie.android.tflite.cardDetector.ImageUtils;
 import com.verifie.android.ui.widget.CameraPreview;
-import com.verifie.android.util.ImageUtils;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public abstract class BaseDocumentScannerFragment extends Fragment implements Camera.PreviewCallback, CameraPreview.PreviewReadyCallback {
@@ -46,16 +41,27 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
 
     private OperationsManager operationsManager;
 
-    private boolean captureDeliveredFrame;
-
     private CameraPreview preview;
     private RelativeLayout previewHolder;
 
-    private Rect cropFrame;
-
-    private Handler handler = new Handler();
+    private Handler handler;
+    private HandlerThread handlerThread;
     protected VerifieConfig config;
     private ImageView capturedDocImage;
+
+
+    private int[] rgbBytes = null;
+    private Runnable imageConverter;
+    protected int previewWidth = 0;
+    protected int previewHeight = 0;
+
+    private byte[][] yuvBytes = new byte[3][];
+    private int yRowStride;
+    private Runnable postInferenceCallback;
+
+    private boolean isProcessingFrame = false;
+    private Handler mainHandler = new Handler();
+    private Point screenSizes;
 
 
     @Override
@@ -63,6 +69,15 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
         super.onCreate(savedInstanceState);
         operationsManager = OperationsManager.getInstance();
         config = getArguments().getParcelable(ARG_CONFIG);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (getActivity() != null) {
+            screenSizes = new Point();
+            getActivity().getWindowManager().getDefaultDisplay().getSize(screenSizes);
+        }
     }
 
     @Override
@@ -76,59 +91,46 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
         if (previewHolder == null) {
             throw new RuntimeException("preview not found with id R.id.preview_holder");
         }
-
-        setupCropperFrame();
+        Log.d(TAG, "onViewCreated, " + this + " :class");
     }
 
     @Override
-    public void onResume() {
+    public synchronized void onResume() {
+        Log.d(TAG, "onResume, " + this + " :class");
         super.onResume();
+        handlerThread = new HandlerThread("inference");
+        handlerThread.start();
+        handler = new Handler(handlerThread.getLooper());
+        mainHandler.postDelayed(() -> {
+            preview = new CameraPreview(getActivity(), 0, CameraPreview.LayoutMode.NoBlank);
+            preview.setOnPreviewReady(BaseDocumentScannerFragment.this);
 
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                preview = new CameraPreview(getActivity(), 0, CameraPreview.LayoutMode.NoBlank);
-                preview.setOnPreviewReady(BaseDocumentScannerFragment.this);
-
-                RelativeLayout.LayoutParams previewLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                previewHolder.addView(preview, 0, previewLayoutParams);
-            }
+            RelativeLayout.LayoutParams previewLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            previewHolder.addView(preview, 0, previewLayoutParams);
         }, 500);
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public synchronized void onPause() {
+        Log.d("onPause ", this + " :class");
 
-        if (preview != null) {
-            preview.stop();
-            previewHolder.removeView(preview);
-            preview = null;
+        preview.stop();
+
+        handlerThread.quitSafely();
+        try {
+            handlerThread.join();
+            handlerThread = null;
+            handler = null;
+        } catch (final InterruptedException e) {
+            Log.e(TAG, "Exception!");
         }
+        super.onPause();
     }
 
-    public final void scanDocument() {
-        captureDeliveredFrame = true;
-    }
-
-    private void setupCropperFrame() {
-        previewHolder.post(new Runnable() {
-
-            @Override
-            public void run() {
-                int holderWidth = previewHolder.getWidth();
-                int holderHeight = previewHolder.getHeight();
-
-                Rect preview = new Rect(0, 0, holderWidth, holderHeight);
-                cropFrame = getCropFrame(preview);
-
-                if (cropFrame == null) {
-                    throw new NullPointerException("getCropFrame should not return null");
-                }
-
-                onCropFrameSet(preview, cropFrame);
-            }
-        });
+    protected synchronized void runInBackground(final Runnable r) {
+        if (handler != null) {
+            handler.post(r);
+        }
     }
 
     @Override
@@ -137,59 +139,42 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
     }
 
     @Override
-    public final void onPreviewFrame(byte[] data, Camera camera) {
-        if (captureDeliveredFrame) {
-            captureDeliveredFrame = false;
-
-            YuvImage img = new YuvImage(data, ImageFormat.NV21, preview.getPreviewSize().width, preview.getPreviewSize().height, null);
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            img.compressToJpeg(new android.graphics.Rect(0, 0, img.getWidth(), img.getHeight()), 50, out);
-            byte[] imageBytes = out.toByteArray();
-            Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-
-            Bitmap rotatedImage;
-
-            try {
-                ExifInterface exif = new ExifInterface(new ByteArrayInputStream(imageBytes));
-                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-
-                Matrix matrix = new Matrix();
-                matrix.postRotate(90);
-
-                switch (orientation) {
-                    case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
-                        matrix.setScale(-1, 1);
-                        break;
-                    case ExifInterface.ORIENTATION_ROTATE_180:
-                        matrix.setRotate(0);
-                        break;
-                    case ExifInterface.ORIENTATION_FLIP_VERTICAL:
-                        matrix.setRotate(180);
-                        matrix.postScale(-1, 1);
-                        break;
-                    case ExifInterface.ORIENTATION_TRANSPOSE:
-                        matrix.setRotate(90);
-                        matrix.postScale(-1, 1);
-                        break;
-                    case ExifInterface.ORIENTATION_ROTATE_90:
-                        matrix.setRotate(-90);
-                        break;
-                    case ExifInterface.ORIENTATION_TRANSVERSE:
-                        matrix.setRotate(-90);
-                        matrix.postScale(-1, 1);
-                        break;
-                    case ExifInterface.ORIENTATION_ROTATE_270:
-                        matrix.setRotate(90);
-                        break;
-                }
-
-                rotatedImage = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-            } catch (IOException e) {
-                rotatedImage = bitmap;
+    public final void onPreviewFrame(byte[] bytes, Camera camera) {
+        try {
+            // Initialize the storage bitmaps once when the resolution is known.
+            if (rgbBytes == null) {
+                Camera.Size previewSize = camera.getParameters().getPreviewSize();
+                previewHeight = previewSize.height;
+                previewWidth = previewSize.width;
+                rgbBytes = new int[previewWidth * previewHeight];
+                onPreviewSizeChosen(new Size(previewSize.width, previewSize.height), 90);
             }
-            processImage(rotatedImage);
+        } catch (final Exception e) {
+            Log.e(TAG, "Exception!");
+            return;
         }
+
+        yuvBytes[0] = bytes;
+        yRowStride = previewWidth;
+
+        imageConverter =
+                () -> com.verifie.android.tflite.cardDetector.ImageUtils.convertYUV420SPToARGB8888(bytes, previewWidth, previewHeight, rgbBytes);
+
+        postInferenceCallback =
+                () -> {
+                    camera.addCallbackBuffer(bytes);
+                    isProcessingFrame = false;
+                };
+        processImage();
     }
+
+    protected byte[] getBytesArray() {
+        return yuvBytes[0];
+    }
+
+    protected abstract void processImage();
+
+    protected abstract void onPreviewSizeChosen(Size size, int i);
 
     protected void showCapturedDocument(Bitmap rotatedImage) {
         capturedDocImage.setVisibility(View.VISIBLE);
@@ -197,50 +182,50 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
     }
 
     protected void hideCapturedImage() {
-        capturedDocImage.setVisibility(View.GONE);
+        if (capturedDocImage != null) {
+            capturedDocImage.setVisibility(View.GONE);
+        }
     }
 
+    protected Bitmap getViewFinderArea(Bitmap bitmap) {
+        int sizeInPixel = getResources().getDimensionPixelSize(R.dimen.frame_margin);
+        int center = bitmap.getHeight() / 2;
+
+        int left = sizeInPixel;
+        int right = bitmap.getWidth() - sizeInPixel;
+        int width = right - left;
+        int frameHeight = (int) (width / 1.42f); // Passport's size (ISO/IEC 7810 ID-3) is 125mm × 88mm
+
+        int top = center - (frameHeight / 2);
+
+        bitmap = Bitmap.createBitmap(bitmap, left, top,
+                width, frameHeight);
+
+        return bitmap;
+    }
+
+    protected abstract void onCropFrameSet(Rect preview);
+
+    protected abstract RectF getCropFrame();
+
     @SuppressLint("CheckResult")
-    private void processImage(Bitmap image) {
-        float cropAreaWidthScale = 1;
-        float cropAreaHeightScale = 1;
+    void processImageOnRemoteServer(Bitmap imageBitmap) {
 
-        if (image.getWidth() != preview.getWidth() || image.getHeight() != preview.getHeight()) {
-            cropAreaWidthScale = ((float) image.getWidth()) / ((float) preview.getWidth());
-            cropAreaHeightScale = ((float) image.getHeight()) / ((float) preview.getHeight());
-        }
-
-        int cropAreaWidth = (int) (cropFrame.right * cropAreaWidthScale);
-        int cropAreaHeight = (int) (cropFrame.bottom * cropAreaHeightScale);
-
-        Bitmap result = ImageUtils.cropArea(image, cropAreaWidth, cropAreaHeight);
-
-        showCapturedDocument(result);
-        if (result == null) {
+        if (imageBitmap == null) {
             return;
         }
-
         onDocumentScanStarted();
 
-        String base64Image = ImageUtils.getImageBase64(result);
+        String base64Image = ImageUtils.getImageBase64(imageBitmap);
 
         operationsManager.uploadDocument(base64Image)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<ResponseModel<Document>>() {
-
-                    @Override
-                    public void accept(ResponseModel<Document> documentScanResponseModelResponseModel) throws Exception {
-                        handleDocumentScanResult(documentScanResponseModelResponseModel);
-                    }
-                }, new Consumer<Throwable>() {
-
-                    @Override
-                    public void accept(Throwable throwable) {
-                        Log.e(TAG, "accept: ", throwable);
-                        onDocumentScanError("Please take a document photo again");
-                    }
-                });
+                .subscribe(this::handleDocumentScanResult,
+                        throwable -> {
+                            Log.e(TAG, "accept: ", throwable);
+                            onDocumentScanError("Please take a document photo again");
+                        });
     }
 
     private void handleDocumentScanResult(ResponseModel<Document> documentScanResponseModelResponseModel) {
@@ -252,63 +237,46 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
     }
 
     private void handleDocument(Document document) {
-        if (document.getDocumentType() == null || !config.getDocType().getName().equalsIgnoreCase(document.getDocumentType())) {
-            hideCapturedImage();
-            new AlertDialog.Builder(getActivity())
-                    .setMessage("Invalid document")
-                    .setPositiveButton("OK", null)
-                    .show();
-        } else if (!document.isDocumentValid()) {
-            new AlertDialog.Builder(getActivity())
-                    .setMessage("Please take a document photo again.")
-                    .setPositiveButton("OK", null)
-                    .show();
-        } else if (document.isNextPage()) {
-            onDocumentScanFinished(true);
-            operationsManager.onDocumentReceived(document);
-            hideCapturedImage();
-        } else if (document.isDocumentValid() && document.getDocumentType() == null) {
-            onDocumentScanFinished(true);
+        if (document == null || document.getDocumentType() == null || !config.getDocType().getName().equalsIgnoreCase(document.getDocumentType()) || !document.isDocumentValid()) {
+            operationsManager.onDocumentReceived(null);
         } else {
-            onDocumentScanFinished(false);
             operationsManager.onDocumentReceived(document);
-            if (preview != null) {
-                preview.stop();
-                previewHolder.removeView(preview);
-                preview = null;
-            }
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    preview = new CameraPreview(getActivity(), 1, CameraPreview.LayoutMode.NoBlank);
-                    preview.setOnPreviewReady(BaseDocumentScannerFragment.this);
-
-                    RelativeLayout.LayoutParams previewLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                    previewHolder.addView(preview, 0, previewLayoutParams);
-                }
-            }, 500);
         }
     }
 
-    protected void openFaceDetectorActivity() {
-        if (preview != null) {
-            preview.stop();
-            previewHolder.removeView(preview);
-            preview = null;
+    protected int getScreenOrientation() {
+        switch (getActivity().getWindowManager().getDefaultDisplay().getRotation()) {
+            case Surface.ROTATION_270:
+                return 270;
+            case Surface.ROTATION_180:
+                return 180;
+            case Surface.ROTATION_90:
+                return 90;
+            default:
+                return 0;
         }
-        Intent intent = new Intent(getContext(), FaceDetectorActivity.class);
-        intent.putExtra(DocumentScannerActivity.EXTRA_CONFIG, config);
-        startActivity(intent);
-        getActivity().finish();
     }
 
-    public abstract Rect getCropFrame(Rect preview);
+    protected void readyForNextImage() {
+        if (postInferenceCallback != null) {
+            postInferenceCallback.run();
+        }
+    }
 
-    public abstract void onCropFrameSet(Rect preview, Rect cropFrame);
+    protected int[] getRgbBytes() {
+        imageConverter.run();
+        return rgbBytes;
+    }
 
     public abstract void onDocumentScanStarted();
 
-    public abstract void onDocumentScanError(String errorMessage);
+    public void onDocumentScanError(String errorMessage) {
+        if (errorMessage == null || errorMessage.isEmpty()) {
+            errorMessage = "Please take a document photo again.";
+        }
+        operationsManager.onDocumentReceived(null);
+    }
 
     public abstract void onDocumentScanFinished(boolean nextPageRequired);
+
 }

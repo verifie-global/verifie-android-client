@@ -8,7 +8,7 @@ public class VerifieTextConfig implements Parcelable {
     private String movePhoneCloser;
     private String movePhoneAway;
     private String blinkEyes;
-    private String alignTap;
+    private String pageTitle;
     private String pageInfo;
     private String scanInfo;
     private String idBackside;
@@ -24,7 +24,7 @@ public class VerifieTextConfig implements Parcelable {
         movePhoneCloser = in.readString();
         movePhoneAway = in.readString();
         blinkEyes = in.readString();
-        alignTap = in.readString();
+        pageTitle = in.readString();
         pageInfo = in.readString();
         scanInfo = in.readString();
         idBackside = in.readString();
@@ -38,7 +38,7 @@ public class VerifieTextConfig implements Parcelable {
         dest.writeString(movePhoneCloser);
         dest.writeString(movePhoneAway);
         dest.writeString(blinkEyes);
-        dest.writeString(alignTap);
+        dest.writeString(pageTitle);
         dest.writeString(pageInfo);
         dest.writeString(scanInfo);
         dest.writeString(idBackside);
@@ -104,12 +104,12 @@ public class VerifieTextConfig implements Parcelable {
         this.blinkEyes = blinkEyes;
     }
 
-    public String getAlignTap() {
-        return alignTap;
+    public String getPageTitle() {
+        return pageTitle;
     }
 
-    public void setAlignTap(String alignTap) {
-        this.alignTap = alignTap;
+    public void setPageTitle(String pageTitle) {
+        this.pageTitle = pageTitle;
     }
 
     public String getIdBackside() {
@@ -149,7 +149,7 @@ public class VerifieTextConfig implements Parcelable {
             return false;
         if (blinkEyes != null ? !blinkEyes.equals(that.blinkEyes) : that.blinkEyes != null)
             return false;
-        if (alignTap != null ? !alignTap.equals(that.alignTap) : that.alignTap != null)
+        if (pageTitle != null ? !pageTitle.equals(that.pageTitle) : that.pageTitle != null)
             return false;
         if (idBackside != null ? !idBackside.equals(that.idBackside) : that.idBackside != null)
             return false;
@@ -163,7 +163,7 @@ public class VerifieTextConfig implements Parcelable {
         int result = movePhoneCloser != null ? movePhoneCloser.hashCode() : 0;
         result = 31 * result + (movePhoneAway != null ? movePhoneAway.hashCode() : 0);
         result = 31 * result + (blinkEyes != null ? blinkEyes.hashCode() : 0);
-        result = 31 * result + (alignTap != null ? alignTap.hashCode() : 0);
+        result = 31 * result + (pageTitle != null ? pageTitle.hashCode() : 0);
         result = 31 * result + (idBackside != null ? idBackside.hashCode() : 0);
         result = 31 * result + (faceFailed != null ? faceFailed.hashCode() : 0);
         result = 31 * result + (eyesFailed != null ? eyesFailed.hashCode() : 0);
@@ -176,7 +176,7 @@ public class VerifieTextConfig implements Parcelable {
                 "movePhoneCloser='" + movePhoneCloser + '\'' +
                 ", movePhoneAway='" + movePhoneAway + '\'' +
                 ", blinkEyes='" + blinkEyes + '\'' +
-                ", alignTap='" + alignTap + '\'' +
+                ", pageTitle='" + pageTitle + '\'' +
                 ", idBackside='" + idBackside + '\'' +
                 ", faceFailed='" + faceFailed + '\'' +
                 ", eyesFailed='" + eyesFailed + '\'' +
@@ -189,7 +189,7 @@ public class VerifieTextConfig implements Parcelable {
         config.movePhoneCloser = "Move phone closer";
         config.movePhoneAway = "Move phone away";
         config.blinkEyes = "Blink eyes";
-        config.alignTap = "Align and Tap";
+        config.pageTitle = "Align and Tap";
         config.idBackside = "Backside of ID";
         config.faceFailed = "Face failed!!!";
         config.eyesFailed = "Eyes failed!!!";

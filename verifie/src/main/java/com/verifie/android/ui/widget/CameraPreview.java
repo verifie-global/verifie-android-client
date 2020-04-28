@@ -89,6 +89,7 @@ public final class CameraPreview extends SurfaceView implements SurfaceHolder.Ca
         Camera.Parameters cameraParams = mCamera.getParameters();
         mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
         mPictureSizeList = cameraParams.getSupportedPictureSizes();
+        cameraParams.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
     }
 
     public boolean safeCameraOpen(int id) {
@@ -135,6 +136,7 @@ public final class CameraPreview extends SurfaceView implements SurfaceHolder.Ca
         mCamera.stopPreview();
 
         Camera.Parameters cameraParams = mCamera.getParameters();
+        cameraParams.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         boolean portrait = isPortrait();
 
         // The code in this if-statement is prevented from executed again when surfaceChanged is

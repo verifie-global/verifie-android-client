@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -15,7 +14,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.verifie.android.DocType;
 import com.verifie.android.Verifie;
 import com.verifie.android.VerifieCallback;
@@ -25,7 +25,6 @@ import com.verifie.android.VerifieTextConfig;
 import com.verifie.android.api.model.res.Document;
 import com.verifie.android.api.model.res.Score;
 
-import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity implements VerifieCallback {
 
@@ -58,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
         getArguments();
         documentImage = findViewById(R.id.document_image);
@@ -80,18 +78,18 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     }
 
     private void getArguments() {
-        Intent intent = getIntent(
-
-        );
+        Intent intent = getIntent();
         if (intent != null) {
             Bundle bundle = intent.getExtras();
             if (bundle != null && bundle.get(Constants.DocTypes.KEY) != null) {
                 docType = bundle.getInt(Constants.DocTypes.KEY, Constants.DocTypes.PASSPORT);
             } else {
-                docType = Constants.DocTypes.PASSPORT;
+//                docType = Constants.DocTypes.PASSPORT;
+                docType = Constants.DocTypes.NATIONAL_ID;
             }
         } else {
-            docType = Constants.DocTypes.PASSPORT;
+//            docType = Constants.DocTypes.PASSPORT;
+            docType = Constants.DocTypes.NATIONAL_ID;
         }
     }
 
@@ -100,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         super.onResume();
         showDocuments();
         startVerifie();
+//        startActivity(new Intent(this, FaceDetectorActivity.class));
     }
 
     private void startVerifie() {
@@ -134,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
                 scanInfo = getString(R.string.scan_info_id_card);
                 break;
         }
-        textConfig.setAlignTap(text);
+        textConfig.setPageTitle(text);
         textConfig.setPageInfo(pageInfo);
         textConfig.setScanInfo(scanInfo);
         textConfig.setIdBackside(getString(R.string.scan_backside_of_doc));
@@ -150,7 +149,9 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     }
 
     private void hideLoading() {
-        progressDialog.dismiss();
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
     }
 
     @Override
@@ -200,15 +201,11 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         setSpannableText(country, "Country", document.getCountry());
         setSpannableText(documentValid, "Document valid", String.valueOf(document.isDocumentValid()));
         setSpannableText(nextPage, "Next Page", String.valueOf(document.isNextPage()));
-        findViewById(R.id.btn_back).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
     }
 
     private void setSpannableText(TextView textView, String prefix, String suffix) {
+        if (suffix == null || suffix.isEmpty()) return;
         String wholeText = prefix + "\n" + suffix;
         SpannableString spannableString = new SpannableString(wholeText);
         int startIndex = wholeText.indexOf(suffix);
@@ -219,6 +216,10 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
 
     @Override
     public void onDocumentReceived(Document document) {
+        if (document == null) {
+//            showError
+            return;
+        }
         if (document.getDocumentFaceImage() != null && !document.getDocumentFaceImage().isEmpty()) {
             documentImageBase64 = document.getDocumentFaceImage();
         }
