@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AlertDialog;
@@ -15,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import android.util.DisplayMetrics;
+import android.view.Window;
+import android.view.WindowManager;
 
 import com.google.android.gms.vision.Frame;
 import com.verifie.android.R;
@@ -56,6 +59,10 @@ public final class DocumentScannerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         config = getIntent().getParcelableExtra(EXTRA_CONFIG);
         changeLanguage(config.getLanguageCode());
+
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_document_scanner);
         if (checkPermissions()) {
             openDocumentScanner();
@@ -67,7 +74,7 @@ public final class DocumentScannerActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 //        if (!((DefaultDocumentScannerFragment) fragment).isLoading()) {
-            super.onBackPressed();
+        super.onBackPressed();
 //        }
     }
 
@@ -95,6 +102,22 @@ public final class DocumentScannerActivity extends AppCompatActivity {
                     .commit();
         } catch (Exception e) {
             throw new RuntimeException("Failed to instantiate fragment " + config.getDocumentScannerFragment());
+        }
+    }
+
+
+    public void openIdCardBacksideScanner() {
+        try {
+            MrzScanFragment fragment = new MrzScanFragment();
+            Bundle args = new Bundle();
+            args.putParcelable(BaseDocumentScannerFragment.ARG_CONFIG, config);
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, fragment)
+                    .commit();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

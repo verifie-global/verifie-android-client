@@ -2,11 +2,17 @@ package com.verifie.android.util;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
+import com.verifie.android.BuildConfig;
 import com.verifie.android.ui.mrz.parsing.MrzFormat;
 import com.verifie.android.ui.mrz.parsing.MrzParser;
 import com.verifie.android.ui.mrz.parsing.MrzRecord;
@@ -51,7 +57,10 @@ public class TextRecognitionHelper {
         this.applicationContext = context.getApplicationContext();
         this.listener = listener;
         this.tessBaseApi = new TessBaseAPI();
-        this.TESSERACT_PATH = context.getFilesDir().getAbsolutePath() + "/";
+        this.tessBaseApi.setDebug(BuildConfig.DEBUG);
+        this.tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST,"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789><");
+        this.tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_BLACKLIST,"abcdefghijklmopqrstuvwxyz\'/,.-:");
+        TESSERACT_PATH = context.getFilesDir().getAbsolutePath() + "/";
         prepareTesseract("ocrb");
 
         mrzFormats.add(MrzFormat.PASSPORT);
@@ -126,7 +135,7 @@ public class TextRecognitionHelper {
      */
     public void setBitmap(final Bitmap bitmap) {
         //tessBaseApi.setPageSegMode(TessBaseAPI.PageSegMode.PSM_SINGLE_BLOCK_VERT_TEXT);
-        tessBaseApi.setImage(bitmap);
+        tessBaseApi.setImage(colorToGrayscale(bitmap));
     }
 
     /**
@@ -136,18 +145,22 @@ public class TextRecognitionHelper {
      */
     public void doOCR() {
         String text = tessBaseApi.getUTF8Text();
+        listener.textDetected(text);
+        ArrayList<Rect> zones = tessBaseApi.getWords().getBoxRects();
         Log.v(TAG, "OCRED TEXT: " + text);
-        checkMRZ(text);
+        checkMRZ(text, zones);
     }
 
-    public void checkMRZ(String txt) {
+    public void checkMRZ(String txt, ArrayList<Rect> zones) {
         final String mrzText = preProcessText(txt);
-
         if (mrzText != null) {
-            Log.i("Found possible MRZ", mrzText);
+            listener.possibleMrzFound(mrzText);
+            System.out.println("Found possible MRZ: " + mrzText);
+            System.out.println("Found possible MRZformatted: " + mrzText.replaceAll("[^a-zA-Z0-9]+", " "));
             try {
                 MrzRecord mrzRecord = MrzParser.parse(mrzText);
                 if (mrzRecord != null) {
+                    System.out.println(" MRZ ======:::     type: " + mrzRecord.format + "     " + mrzText);
                     if (supportedFormats.contains(mrzRecord.format)) {
                         boolean additionalPassportCheckOK = true;
                         if (mrzRecord.format == MrzFormat.PASSPORT) {
@@ -157,12 +170,7 @@ public class TextRecognitionHelper {
                         }
 
                         if (additionalPassportCheckOK) {
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    listener.onScanned(mrzText);
-                                }
-                            });
+                            new Handler(Looper.getMainLooper()).post(() -> listener.onScanned(mrzText, zones, mrzRecord.format));
                             return;
                         }
                     }
@@ -206,6 +214,86 @@ public class TextRecognitionHelper {
         return null;
     }
 
+    public Bitmap colorToGrayscale(Bitmap bm) {
+        Bitmap grayScale = Bitmap.createBitmap(bm.getWidth(), bm.getHeight(), Bitmap.Config.ARGB_8888);
+
+        ColorMatrix cm = new ColorMatrix();
+        cm.setSaturation(0);
+
+        Paint p = new Paint();
+        p.setColorFilter(new ColorMatrixColorFilter(cm));
+
+        new Canvas(grayScale).drawBitmap(bm, 0, 0, p);
+
+        return grayScale;
+    }
+
+    public Bitmap grayScaleToBin(Bitmap bm, int threshold) {
+        Bitmap bin = Bitmap.createBitmap(bm.getWidth(), bm.getHeight(), Bitmap.Config.ARGB_8888);
+
+        ColorMatrix cm = new ColorMatrix(new float[] {
+                85.f, 85.f, 85.f, 0.f, -255.f * threshold,
+                85.f, 85.f, 85.f, 0.f, -255.f * threshold,
+                85.f, 85.f, 85.f, 0.f, -255.f * threshold,
+                0f, 0f, 0f, 1f, 0f
+        });
+
+        Paint p = new Paint();
+        p.setColorFilter(new ColorMatrixColorFilter(cm));
+
+        new Canvas(bin).drawBitmap(bm, 0, 0, p);
+
+        return bin;
+    }
+
+    public Bitmap otsuThreshold (Bitmap bm) {
+
+        // Get Histogram
+        int[] histogram = new int[256];
+        for(int i = 0; i < histogram.length; i++) histogram[i] = 0;
+
+        for(int i = 0; i < bm.getWidth(); i++) {
+            for(int j = 0; j < bm.getHeight(); j++) {
+                histogram[(bm.getPixel(i, j) & 0xFF0000) >> 16]++;
+            }
+        }
+
+        // Get binary threshold using Otsu's method
+
+        int total = bm.getHeight() * bm.getWidth();
+
+        float sum = 0;
+        for(int i = 0; i < 256; i++) sum += i * histogram[i];
+
+        float sumB = 0;
+        int wB = 0;
+        int wF = 0;
+
+        float varMax = 0;
+        int threshold = 0;
+
+        for(int i = 0 ; i < 256 ; i++) {
+            wB += histogram[i];
+            if(wB == 0) continue;
+            wF = total - wB;
+
+            if(wF == 0) break;
+
+            sumB += (float) (i * histogram[i]);
+            float mB = sumB / wB;
+            float mF = (sum - sumB) / wF;
+
+            float varBetween = (float)wB * (float)wF * (mB - mF) * (mB - mF);
+
+            if(varBetween > varMax) {
+                varMax = varBetween;
+                threshold = i;
+            }
+        }
+
+        return grayScaleToBin(bm, threshold);
+    }
+
     /**
      * Clear tesseract data.
      */
@@ -214,6 +302,10 @@ public class TextRecognitionHelper {
     }
 
     public interface OnMRZScanned {
-        void onScanned(String mrzText);
+        void onScanned(String mrzText, ArrayList<Rect> bounds, MrzFormat format);
+
+        void textDetected(String text);
+
+        void possibleMrzFound(String text);
     }
 }

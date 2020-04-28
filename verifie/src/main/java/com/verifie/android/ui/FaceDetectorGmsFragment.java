@@ -2,6 +2,7 @@ package com.verifie.android.ui;
 
 
 import android.Manifest;
+import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -11,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -31,6 +33,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -50,22 +53,24 @@ import com.verifie.android.gms.TensorFaceDetector;
 import com.verifie.android.tflite.cardDetector.ImageUtils;
 import com.verifie.android.ui.widget.OvalOverlayView;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
-import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class FaceDetectorGmsFragment extends Fragment {
-    public static final float FaceSolidityMin = 0.040F;
-    public static final float FaceSolidityMax = 0.090F;
+    //    public static final float FaceSolidityMin = 0.040F;
+//    public static final float FaceSolidityMax = 0.090F;
+    public static final float FaceSolidityMin = 0.125F;
+    public static final float FaceSolidityMax = 0.190F;
     public static final int IMAGE_SIZE = 96;
     public static final int SECONDS_TO_HOLD = 5;
     public static final int REALS_MIN_PERCENTAGE = 40;
@@ -88,6 +93,9 @@ public class FaceDetectorGmsFragment extends Fragment {
     private ImageView imgPreview;
     private boolean isRequestSent = false;
     private boolean isAnimationStarted = false;
+    private Model model;
+    private View recommendationsLayout;
+    private boolean stopped = true;
 
     private boolean areRealsGreather() {
         int total = realCount + fakeCount;
@@ -108,13 +116,96 @@ public class FaceDetectorGmsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_face_detector_gms, container, false);
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_face_detector_gms, container, false);
+    }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        initUI(view);
+        oval_overlay_animation.setAnimatorListener(new Animator.AnimatorListener() {
+            private boolean canceled = false;
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+                canceled = false;
+            }
+
+            @SuppressLint("CheckResult")
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (!canceled && areRealsGreather()) {
+                    if (!isLoading()) {
+                        oval_overlay_animation.startAnimationAsLoading();
+                        isRequestSent = true;
+                        imgPreview.setVisibility(View.VISIBLE);
+                        tvInfo.setVisibility(View.GONE);
+                        imgPreview.setImageBitmap(model.bitmapOriginal);
+                        model.bitmapOvalShape = ImageUtils.cropArea(model.bitmapOriginal, model.ovalRect);
+                        compressBitmap(model.bitmapOvalShape, "selfie.png");
+                        final String imageBase64 = ImageUtils.getImageBase64(model.bitmapOvalShape);
+                        setText("Fake:  " + fakeCount + " < Real:  " + realCount + "  ---- sending selfie image to server");
+                        OperationsManager.getInstance().uploadFace(imageBase64)
+                                .subscribeOn(Schedulers.newThread())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(faceScannedModelResponse -> {
+                                    faceScannedModelResponse.getResult().setBase64Image(imageBase64);
+                                    OperationsManager.getInstance().onScoreReceived(faceScannedModelResponse.getResult());
+                                    oval_overlay_animation.drawDone();
+                                    new Handler().postDelayed(() -> {
+                                        if (getActivity() != null) {
+                                            getActivity().finish();
+                                        }
+                                    }, 1000);
+                                }, throwable -> {
+                                    OperationsManager.getInstance().onScoreReceived(new Score());
+                                    oval_overlay_animation.drawDone();
+                                    new Handler().postDelayed(() -> {
+                                        if (getActivity() != null) {
+                                            getActivity().finish();
+                                        }
+                                    }, 1000);
+                                });
+                    }
+                } else {
+                    isAnimationStarted = false;
+                    setText("Either  - Fake:  " + fakeCount + " > Real:  " + realCount + " Or canceled, face was moved out from oval");
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                canceled = true;
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+    }
+
+    private void compressBitmap(Bitmap bitmap, String name) {
+        Activity activity = getActivity();
+        if (activity != null) {
+            try {
+                FileOutputStream fos = new FileOutputStream(activity.getFilesDir().getAbsolutePath() + "/" + name);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 50, fos);
+                fos.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void initUI(View view) {
         mPreview = view.findViewById(R.id.preview);
         tvInfo = view.findViewById(R.id.tv_info);
         oval_overlay_animation = view.findViewById(R.id.oval_overlay_animation);
         imgPreview = view.findViewById(R.id.img_preview);
-
+        recommendationsLayout = view.findViewById(R.id.layout_recommendation_passport_page);
+        showRecommendationsLayout();
         // Check for the camera permission before accessing the camera.  If the
         // permission is not granted yet, request permission.
         if (getContext() != null) {
@@ -125,14 +216,14 @@ public class FaceDetectorGmsFragment extends Fragment {
                 requestCameraPermission();
             }
         }
-        // Inflate the layout for this fragment
-        return view;
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    private void setText(String text) {
+        new Handler().post(() -> {
+            tvInfo.setText(text);
+        });
     }
+
 
     private void createCameraSource() {
         Context context = getContext();
@@ -160,16 +251,44 @@ public class FaceDetectorGmsFragment extends Fragment {
             // available.  The detector will automatically become operational once the library
             // download completes on device.
             Log.w(TAG, "Face detector dependencies are not yet available.");
+            setText("Face detector dependencies are not yet available.");
         }
 
         mCameraSource = new CameraSource.Builder(context, myFaceDetector)
                 .setFacing(CameraSource.CAMERA_FACING_FRONT)
                 .setAutoFocusEnabled(true)
                 .setRequestedFps(100.0f)
-                .setRequestedPreviewSize(1280, 720)
-                .setFocusMode(FOCUS_MODE_CONTINUOUS_VIDEO)
+//                .setRequestedPreviewSize(640, 480)
+                .setRequestedPreviewSize(1920, 1080)
                 .build();
         tensorFaceDetector = new TensorFaceDetector(getActivity());
+    }
+
+    private void showRecommendationsLayout() {
+        if (getView() != null) {
+            setRecommendationItemData(getView().findViewById(R.id.recommendation_great), getString(R.string.great), R.drawable.ic_boy_great, R.drawable.ic_success);
+            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_glasses), getString(R.string.no_glasses), R.drawable.ic_boy_glasses, R.drawable.ic_error);
+            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_shadow), getString(R.string.no_shadow), R.drawable.ic_boy_shadow, R.drawable.ic_error);
+            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_flash), getString(R.string.no_flash), R.drawable.ic_boy_flash, R.drawable.ic_error);
+            ((TextView) getView().findViewById(R.id.title_recommendation)).setText(getString(R.string.recommendations));
+            getView().findViewById(R.id.btn_continue).setOnClickListener(v -> {
+                recommendationsLayout.setVisibility(View.INVISIBLE);
+                stopped = false;
+            });
+            getView().findViewById(R.id.btn_back_recommend).setOnClickListener(v -> {
+                if (getActivity() != null) {
+                    getActivity().finish();
+                }
+            });
+            recommendationsLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+    private void setRecommendationItemData(View itemView, String titleRes, int iconRes, int statusIconRes) {
+        ((TextView) itemView.findViewById(R.id.txt_recommend_text)).setText(titleRes);
+        ((ImageView) itemView.findViewById(R.id.person_icon)).setImageResource(iconRes);
+        ((ImageView) itemView.findViewById(R.id.icon_recommendation)).setImageResource(statusIconRes);
     }
 
 
@@ -179,7 +298,7 @@ public class FaceDetectorGmsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        startCameraSource();
+        new Handler().postDelayed(this::startCameraSource, 200);
     }
 
 
@@ -219,6 +338,7 @@ public class FaceDetectorGmsFragment extends Fragment {
         int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
                 getContext());
         if (code != ConnectionResult.SUCCESS) {
+            setText("GMS error code : " + code);
             Dialog dlg =
                     GoogleApiAvailability.getInstance().getErrorDialog(getActivity(), code, RC_HANDLE_GMS);
             dlg.show();
@@ -231,6 +351,7 @@ public class FaceDetectorGmsFragment extends Fragment {
                 Log.e(TAG, "Unable to start camera source.", e);
                 mCameraSource.release();
                 mCameraSource = null;
+                setText("Unable to start camera source: " + e.getMessage());
             }
         }
     }
@@ -251,13 +372,8 @@ public class FaceDetectorGmsFragment extends Fragment {
             return;
         }
 
-        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                ActivityCompat.requestPermissions(thisActivity, permissions,
-                        RC_HANDLE_CAMERA_PERM);
-            }
-        };
+        DialogInterface.OnClickListener listener = (dialog, which) -> ActivityCompat.requestPermissions(thisActivity, permissions,
+                RC_HANDLE_CAMERA_PERM);
         new AlertDialog.Builder(getContext())
                 .setMessage(R.string.permission_camera_rationale)
                 .setNeutralButton(android.R.string.ok, listener);
@@ -282,7 +398,9 @@ public class FaceDetectorGmsFragment extends Fragment {
 
 
     private void onFaceScanError(String s, final boolean moveToPreviousPage) {
-        oval_overlay_animation.stopAnim();
+        if (!isLoading()) {
+            oval_overlay_animation.stopAnim();
+        }
         new androidx.appcompat.app.AlertDialog.Builder(getActivity())
                 .setMessage(s)
                 .setPositiveButton("OK", (dialog, which) -> resetData())
@@ -316,16 +434,18 @@ public class FaceDetectorGmsFragment extends Fragment {
 
         @Override
         public void onUpdate(FaceDetector.Detections<Face> detectionResults, Face face) {
+            if (stopped) return;
             float fullArea = mPreview.getWidth() * mPreview.getHeight();
             float faceWidth = face.getWidth();
             float faceHeight = face.getHeight();
             float faceArea = faceWidth * faceHeight;
             float solidity = faceArea / fullArea;
+            System.out.println("solidity -- " + solidity);
             if (solidity > FaceSolidityMin) {
                 if (solidity < FaceSolidityMax) {
                     mainHandler.post(() -> {
                         tvInfo.setText(R.string.hold_still);
-                        if (!isAnimationStarted && !oval_overlay_animation.isRunningAnimation()) {
+                        if (!isLoading() && !isAnimationStarted && !oval_overlay_animation.isRunningAnimation()) {
                             isAnimationStarted = true;
                             oval_overlay_animation.startAnimation(5);
                         }
@@ -349,11 +469,14 @@ public class FaceDetectorGmsFragment extends Fragment {
 
         @Override
         public void onMissing(FaceDetector.Detections<Face> detectionResults) {
+            if (stopped) return;
             faceDetected = false;
             isAnimationStarted = false;
             mainHandler.post(() -> {
                 tvInfo.setText("");
-                oval_overlay_animation.stopAnim();
+                if (!isLoading()) {
+                    oval_overlay_animation.stopAnim();
+                }
                 resetData();
             });
         }
@@ -362,7 +485,9 @@ public class FaceDetectorGmsFragment extends Fragment {
         public void onDone() {
             mainHandler.post(() -> {
                 tvInfo.setText("");
-                oval_overlay_animation.stopAnim();
+                if (!isLoading()) {
+                    oval_overlay_animation.stopAnim();
+                }
                 resetData();
             });
             isAnimationStarted = false;
@@ -379,6 +504,7 @@ public class FaceDetectorGmsFragment extends Fragment {
 
         public SparseArray<Face> detect(Frame frame) {
             SparseArray<Face> faceSparseArray = mDelegate.detect(frame);
+            if (stopped) return faceSparseArray;
             if (faceDetected && seconds < SECONDS_TO_HOLD) {
                 if (startTime == -1) {
                     startTime = System.currentTimeMillis();
@@ -388,14 +514,15 @@ public class FaceDetectorGmsFragment extends Fragment {
                     PointF XY = face.getPosition();
                     RectF faceRectF = new RectF(XY.x, XY.y, XY.x + face.getWidth(), XY.y + face.getHeight());
                     if (oval_overlay_animation.getVisibleBounds().contains(faceRectF)) {
-                        YuvImage yuvImage = new YuvImage(frame.getGrayscaleImageData().array(), frame.getMetadata().getFormat(), frame.getMetadata().getWidth(), frame.getMetadata().getHeight(), null);
-                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                        yuvImage.compressToJpeg(new Rect(0, 0, frame.getMetadata().getWidth(), frame.getMetadata().getHeight()), 100, byteArrayOutputStream);
-                        byte[] jpegArray = byteArrayOutputStream.toByteArray();
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(jpegArray, 0, jpegArray.length);
+//                        YuvImage yuvImage = new YuvImage(frame.getGrayscaleImageData().array(), frame.getMetadata().getFormat(), frame.getMetadata().getWidth(), frame.getMetadata().getHeight(), null);
+//                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//                        yuvImage.compressToJpeg(new Rect(0, 0, frame.getMetadata().getWidth(), frame.getMetadata().getHeight()), 50, byteArrayOutputStream);
+//                        byte[] jpegArray = byteArrayOutputStream.toByteArray();
+//                        Bitmap bitmap = BitmapFactory.decodeByteArray(jpegArray, 0, jpegArray.length);
                         Model model = new Model();
-                        model.bitmap = bitmap;
-                        model.bitmapOriginal = bitmap;
+                        model.bitmap = processImageOrientation(frame);
+                        model.bitmapOriginal = model.bitmap;
+                        model.ovalRect = oval_overlay_animation.getVisibleBounds();
 
                         if (XY.x > 0 && XY.y > 0) {
                             model.rect = new Rect(((int) XY.x), ((int) XY.y), ((int) (face.getWidth())), ((int) (face.getHeight())));
@@ -428,11 +555,6 @@ public class FaceDetectorGmsFragment extends Fragment {
         @Override
         protected Model doInBackground(Model... models) {
             Model model = models[0];
-            Matrix matrix = new Matrix();
-            matrix.postRotate(-90);
-            matrix.postScale(-1, 1);
-            model.bitmap = Bitmap.createBitmap(model.bitmap, 0, 0, model.bitmap.getWidth(), model.bitmap.getHeight(), matrix, false);
-            model.bitmapOriginal = model.bitmap;
             if (model.rect.left + model.rect.right <= model.bitmap.getWidth() && model.rect.top + model.rect.bottom <= model.bitmap.getHeight()) {
                 model.bitmap = Bitmap.createBitmap(model.bitmap, model.rect.left, model.rect.top, model.rect.right, model.rect.bottom);
             }
@@ -443,6 +565,7 @@ public class FaceDetectorGmsFragment extends Fragment {
         @Override
         protected void onPostExecute(Model model) {
             super.onPostExecute(model);
+            FaceDetectorGmsFragment.this.model = model;
             HashMap<String, Float> result = (HashMap<String, Float>) tensorFaceDetector.classifyImage(Bitmap.createScaledBitmap(model.bitmap, IMAGE_SIZE, IMAGE_SIZE, true));
             Float resFake = result.get(TensorFaceDetector.FAKE);
             if (resFake != null) {
@@ -452,39 +575,67 @@ public class FaceDetectorGmsFragment extends Fragment {
                     realCount++;
                 }
             }
-            long diffTime = System.currentTimeMillis() - startTime;
-            if (startTime != -1 && diffTime >= SECONDS_TO_HOLD * 1000) {
-                seconds = SECONDS_TO_HOLD;
-                if (areRealsGreather()) {
-                    if (!isLoading()) {
-                        isRequestSent = true;
-                        imgPreview.setVisibility(View.VISIBLE);
-                        tvInfo.setVisibility(View.GONE);
-                        imgPreview.setImageBitmap(model.bitmapOriginal);
-                        final String imageBase64 = ImageUtils.getImageBase64(model.bitmapOriginal);
-                        OperationsManager.getInstance().uploadFace(imageBase64)
-                                .subscribeOn(Schedulers.newThread())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(faceScannedModelResponse -> {
-                                    getActivity().finish();
-                                    faceScannedModelResponse.getResult().setBase64Image(imageBase64);
-                                    OperationsManager.getInstance().onScoreReceived(faceScannedModelResponse.getResult());
-                                }, throwable -> {
-                                    getActivity().finish();
-                                    OperationsManager.getInstance().onScoreReceived(new Score());
-                                });
-                    }
-                } else {
-                    onFaceScanError("Light up face evenly", false);
-                }
-            }
         }
+    }
+
+    private Bitmap processImageOrientation(Frame frame) {
+
+        YuvImage yuvImage = new YuvImage(frame.getGrayscaleImageData().array(), frame.getMetadata().getFormat(), frame.getMetadata().getWidth(), frame.getMetadata().getHeight(), null);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        yuvImage.compressToJpeg(new Rect(0, 0, frame.getMetadata().getWidth(), frame.getMetadata().getHeight()), 60, byteArrayOutputStream);
+        byte[] jpegArray = byteArrayOutputStream.toByteArray();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(jpegArray, 0, jpegArray.length);
+
+        Bitmap rotatedImage;
+
+        try {
+            ExifInterface exif = new ExifInterface(new ByteArrayInputStream(jpegArray));
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+            Matrix matrix = new Matrix();
+            matrix.postRotate(90);
+
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                    matrix.setScale(-1, 1);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    matrix.setRotate(0);
+                    break;
+                case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                    matrix.setRotate(180);
+                    matrix.postScale(-1, 1);
+                    break;
+                case ExifInterface.ORIENTATION_TRANSPOSE:
+                    matrix.setRotate(90);
+                    matrix.postScale(-1, 1);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    matrix.setRotate(-90);
+                    break;
+                case ExifInterface.ORIENTATION_TRANSVERSE:
+                case ExifInterface.ORIENTATION_UNDEFINED:
+                    matrix.setRotate(-90);
+                    matrix.postScale(-1, 1);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    matrix.setRotate(90);
+                    break;
+            }
+
+            rotatedImage = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        } catch (IOException e) {
+            rotatedImage = bitmap;
+        }
+        return rotatedImage;
     }
 
     class Model {
         Bitmap bitmap;
         Bitmap bitmapOriginal;
+        Bitmap bitmapOvalShape;
         Rect rect;
+        RectF ovalRect;
     }
 
 

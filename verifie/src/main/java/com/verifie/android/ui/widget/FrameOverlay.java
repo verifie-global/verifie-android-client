@@ -19,6 +19,7 @@ public class FrameOverlay extends LinearLayout {
     private Bitmap windowFrame;
     private Context context;
     private RectF innerRectangle;
+    private float coeficent = 1.54f;
 
     public FrameOverlay(Context context) {
         super(context);
@@ -61,6 +62,15 @@ public class FrameOverlay extends LinearLayout {
         return false;
     }
 
+
+    public void setCoeficent(float coeficent) {
+        this.coeficent = coeficent;
+        if (windowFrame != null) {
+            createWindowFrame();
+            invalidate();
+        }
+    }
+
     protected void createWindowFrame() {
         int viewHeight = getHeight();
 
@@ -75,14 +85,14 @@ public class FrameOverlay extends LinearLayout {
 
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT));
 
-        int sizeInPixel = context.getResources().getDimensionPixelSize(R.dimen.frame_margin);
+        int sizeInPixel = context.getResources().getDimensionPixelSize(R.dimen._12sdp);
 
         int center = viewHeight / 2;
 
         int left = sizeInPixel;
         int right = getWidth() - sizeInPixel;
         int width = right - left;
-        int frameHeight = (int) (width / 1.42f); // Passport's size (ISO/IEC 7810 ID-3) is 125mm × 88mm
+        int frameHeight = (int) (width / coeficent); // Passport's size (ISO/IEC 7810 ID-3) is 125mm × 88mm
 
         int top = center - (frameHeight / 2);
         int bottom = center + (frameHeight / 2);

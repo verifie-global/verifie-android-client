@@ -1,8 +1,8 @@
 package com.verifie.android.ui;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.Camera;
@@ -19,9 +19,9 @@ import android.widget.RelativeLayout;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import com.verifie.android.DocType;
 import com.verifie.android.OperationsManager;
 import com.verifie.android.R;
 import com.verifie.android.VerifieConfig;
@@ -61,7 +61,7 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
 
     private boolean isProcessingFrame = false;
     private Handler mainHandler = new Handler();
-    private RectF cropFrame;
+    private Point screenSizes;
 
 
     @Override
@@ -69,6 +69,15 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
         super.onCreate(savedInstanceState);
         operationsManager = OperationsManager.getInstance();
         config = getArguments().getParcelable(ARG_CONFIG);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (getActivity() != null) {
+            screenSizes = new Point();
+            getActivity().getWindowManager().getDefaultDisplay().getSize(screenSizes);
+        }
     }
 
     @Override
@@ -82,15 +91,13 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
         if (previewHolder == null) {
             throw new RuntimeException("preview not found with id R.id.preview_holder");
         }
-
-        setupCropperFrame();
+        Log.d(TAG, "onViewCreated, " + this + " :class");
     }
 
     @Override
     public synchronized void onResume() {
-        Log.d("onResume ", this + " :class");
+        Log.d(TAG, "onResume, " + this + " :class");
         super.onResume();
-
         handlerThread = new HandlerThread("inference");
         handlerThread.start();
         handler = new Handler(handlerThread.getLooper());
@@ -106,6 +113,8 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
     @Override
     public synchronized void onPause() {
         Log.d("onPause ", this + " :class");
+
+        preview.stop();
 
         handlerThread.quitSafely();
         try {
@@ -178,46 +187,26 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
         }
     }
 
+    protected Bitmap getViewFinderArea(Bitmap bitmap) {
+        int sizeInPixel = getResources().getDimensionPixelSize(R.dimen.frame_margin);
+        int center = bitmap.getHeight() / 2;
 
-    private void setupCropperFrame() {
-        previewHolder.post(new Runnable() {
+        int left = sizeInPixel;
+        int right = bitmap.getWidth() - sizeInPixel;
+        int width = right - left;
+        int frameHeight = (int) (width / 1.42f); // Passport's size (ISO/IEC 7810 ID-3) is 125mm × 88mm
 
-            @Override
-            public void run() {
-                int holderWidth = previewHolder.getWidth();
-                int holderHeight = previewHolder.getHeight();
+        int top = center - (frameHeight / 2);
 
-                Rect preview = new Rect(0, 0, holderWidth, holderHeight);
-                cropFrame = getCropFrame(preview);
+        bitmap = Bitmap.createBitmap(bitmap, left, top,
+                width, frameHeight);
 
-                if (cropFrame == null) {
-                    throw new NullPointerException("getCropFrame should not return null");
-                }
-
-                onCropFrameSet(preview, cropFrame);
-            }
-        });
+        return bitmap;
     }
 
+    protected abstract void onCropFrameSet(Rect preview);
 
-    protected Bitmap processImageByFrameDetectFace(Bitmap image) {
-        float cropAreaWidthScale = 1;
-        float cropAreaHeightScale = 1;
-
-        if (image.getWidth() != preview.getWidth() || image.getHeight() != preview.getHeight()) {
-            cropAreaWidthScale = ((float) image.getWidth()) / ((float) preview.getWidth());
-            cropAreaHeightScale = ((float) image.getHeight()) / ((float) preview.getHeight());
-        }
-
-        int cropAreaWidth = (int) (cropFrame.right * cropAreaWidthScale);
-        int cropAreaHeight = (int) (cropFrame.bottom * cropAreaHeightScale);
-
-        return ImageUtils.cropArea(image, cropAreaWidth, cropAreaHeight);
-    }
-
-    protected abstract void onCropFrameSet(Rect preview, RectF cropFrame);
-
-    protected abstract RectF getCropFrame(Rect preview);
+    protected abstract RectF getCropFrame();
 
     @SuppressLint("CheckResult")
     void processImageOnRemoteServer(Bitmap imageBitmap) {
@@ -248,51 +237,11 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
     }
 
     private void handleDocument(Document document) {
-        if (document.getDocumentType() == null || !config.getDocType().getName().equalsIgnoreCase(document.getDocumentType())) {
-            hideCapturedImage();
-            new AlertDialog.Builder(getActivity())
-                    .setMessage("Invalid document")
-                    .setPositiveButton("OK", null)
-                    .show();
-        } else if (!document.isDocumentValid()) {
-            new AlertDialog.Builder(getActivity())
-                    .setMessage("Please take a document photo again.")
-                    .setPositiveButton("OK", null)
-                    .show();
-        } else if (document.isNextPage()) {
-//            onDocumentScanFinished(true);
-            operationsManager.onDocumentReceived(document);
-            hideCapturedImage();
-        } else if (document.isDocumentValid() && document.getDocumentType() == null) {
-//            onDocumentScanFinished(true);
+        if (document == null || document.getDocumentType() == null || !config.getDocType().getName().equalsIgnoreCase(document.getDocumentType()) || !document.isDocumentValid()) {
+            operationsManager.onDocumentReceived(null);
         } else {
-//            onDocumentScanFinished(false);
             operationsManager.onDocumentReceived(document);
-            if (preview != null) {
-                preview.stop();
-                previewHolder.removeView(preview);
-                preview = null;
-            }
-            handler.postDelayed(() -> {
-                preview = new CameraPreview(getActivity(), 1, CameraPreview.LayoutMode.NoBlank);
-                preview.setOnPreviewReady(BaseDocumentScannerFragment.this);
-
-                RelativeLayout.LayoutParams previewLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                previewHolder.addView(preview, 0, previewLayoutParams);
-            }, 500);
         }
-    }
-
-    protected void openFaceDetectorActivity() {
-        if (preview != null) {
-            preview.stop();
-            previewHolder.removeView(preview);
-            preview = null;
-        }
-        Intent intent = new Intent(getContext(), FaceDetectorActivity.class);
-        intent.putExtra(DocumentScannerActivity.EXTRA_CONFIG, config);
-        startActivity(intent);
-        getActivity().finish();
     }
 
     protected int getScreenOrientation() {
@@ -321,7 +270,7 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
 
     public abstract void onDocumentScanStarted();
 
-    public void onDocumentScanError(String errorMessage){
+    public void onDocumentScanError(String errorMessage) {
         if (errorMessage == null || errorMessage.isEmpty()) {
             errorMessage = "Please take a document photo again.";
         }
@@ -329,4 +278,5 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
     }
 
     public abstract void onDocumentScanFinished(boolean nextPageRequired);
+
 }

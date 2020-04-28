@@ -8,27 +8,32 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.vision.Frame;
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraOptions;
 import com.otaliastudios.cameraview.CameraView;
+import com.otaliastudios.cameraview.frame.Frame;
 import com.otaliastudios.cameraview.frame.FrameProcessor;
+import com.otaliastudios.cameraview.preview.CameraPreview;
+import com.otaliastudios.cameraview.size.Size;
+import com.verifie.android.DocType;
 import com.verifie.android.OperationsManager;
 import com.verifie.android.R;
 import com.verifie.android.VerifieColorConfig;
@@ -37,6 +42,7 @@ import com.verifie.android.VerifieTextConfig;
 import com.verifie.android.api.model.res.Document;
 import com.verifie.android.api.model.res.ResponseModel;
 import com.verifie.android.tflite.cardDetector.ImageUtils;
+import com.verifie.android.ui.mrz.parsing.MrzFormat;
 import com.verifie.android.ui.widget.FrameOverlay;
 import com.verifie.android.util.TextRecognitionHelper;
 
@@ -44,7 +50,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.BreakIterator;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -55,13 +62,11 @@ import static com.verifie.android.ui.BaseDocumentScannerFragment.ARG_CONFIG;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PassportScanFragment extends Fragment {
+public class MrzScanFragment extends Fragment {
 
-    private static final String TAG = PassportScanFragment.class.getName();
+    private static final String TAG = MrzScanFragment.class.getName();
+
     private CameraView camera;
-
-    private FrameOverlay viewFinder;
-
     private TextRecognitionHelper textRecognitionHelper;
 
     private AtomicBoolean processing = new AtomicBoolean(false);
@@ -73,13 +78,16 @@ public class PassportScanFragment extends Fragment {
 
     private OperationsManager operationsManager;
     private VerifieConfig config;
-    private View recommendationsLayout;
+    private Bitmap bitmap;
+//    private ImageView croppedImage;
+    private boolean isSentRequest = false;
+    //    private TextView debugTxt;
     private TextView txtTitle;
-    private TextView txtPageInfo;
-    private TextView txtScanInfo;
+    private FrameOverlay viewFinder;
+    private Size previewSize;
+    private Point screenSizes;
 
-
-    public PassportScanFragment() {
+    public MrzScanFragment() {
         // Required empty public constructor
     }
 
@@ -92,10 +100,19 @@ public class PassportScanFragment extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (getActivity() != null) {
+            screenSizes = new Point();
+            getActivity().getWindowManager().getDefaultDisplay().getSize(screenSizes);
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_passport_scan, container, false);
+        return inflater.inflate(R.layout.fragment_mrz_scan, container, false);
     }
 
     @Override
@@ -103,91 +120,96 @@ public class PassportScanFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         camera = view.findViewById(R.id.camera);
         camera.setLifecycleOwner(this);
-        recommendationsLayout = view.findViewById(R.id.layout_recommendation_passport_page);
 
 
+//        croppedImage = view.findViewById(R.id.cropped_image);
+        viewFinder = view.findViewById(R.id.cropper_frame_holder);
         camera.addCameraListener(new CameraListener() {
             @Override
             public void onCameraOpened(@NonNull CameraOptions options) {
-                viewFinder = new FrameOverlay(view.getContext());
-                camera.addView(viewFinder);
+//                viewFinder = new FrameOverlay(view.getContext());
+//                camera.addView(viewFinder);
                 camera.addFrameProcessor(frameProcessor);
             }
         });
         initTextHelper();
         initPageTexts(view);
+//        debugTxt = view.findViewById(R.id.txt_debug);
+        view.findViewById(R.id.btn_back).setOnClickListener(v -> {
+            if (getActivity() != null) {
+                getActivity().finish();
+            }
+        });
+
+        camera.setPreviewStreamSize(source -> {
+            for (int i = 0; i < source.size(); i++) {
+                if (source.get(i).getWidth() == screenSizes.x) {
+                    int finalI = i;
+                    return new ArrayList<Size>() {{
+                        add(source.get(finalI));
+                    }};
+                }
+            }
+            return source;
+        });
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (config.getDocType() == DocType.DOC_TYPE_PASSPORT) {
+            viewFinder.setCoeficent(1.42f);
+        }
     }
 
     private void initPageTexts(View view) {
         txtTitle = view.findViewById(R.id.title);
-        txtPageInfo = view.findViewById(R.id.txt_page_info);
-        txtScanInfo = view.findViewById(R.id.txt_scan_info);
+        TextView txtPageInfo = view.findViewById(R.id.txt_page_info);
+        TextView txtScanInfo = view.findViewById(R.id.txt_scan_info);
+
         VerifieTextConfig textConfig = config.getTextConfig();
         VerifieColorConfig colorConfig = config.getColorConfig();
 
-        txtTitle.setText(textConfig.getAlignTap());
         txtTitle.setTextColor(colorConfig.getDocCropperFrameColor());
-        txtPageInfo.setText(textConfig.getPageInfo());
-        txtScanInfo.setText(textConfig.getScanInfo());
+        txtTitle.setText(textConfig.getPageTitle());
+
+        if (config.getDocType() == DocType.DOC_TYPE_ID_CARD) {
+            txtPageInfo.setText(textConfig.getIdBackside());
+            txtScanInfo.setText(textConfig.getIdBacksideInfo());
+        } else {
+            txtPageInfo.setText(textConfig.getPageInfo());
+            txtScanInfo.setText(textConfig.getScanInfo());
+        }
     }
 
     private FrameProcessor frameProcessor = new FrameProcessor() {
         @Override
-        public void process(@NonNull com.otaliastudios.cameraview.frame.Frame frame) {
+        public void process(@NonNull Frame frame) {
             if (frame.getData() != null && !processing.get()) {
                 processing.set(true);
-
+//                bitmap = processImageOrientation(frame);
                 YuvImage yuvImage = new YuvImage(frame.getData(), ImageFormat.NV21, frame.getSize().getWidth(), frame.getSize().getHeight(), null);
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
                 yuvImage.compressToJpeg(new Rect(0, 0, frame.getSize().getWidth(), frame.getSize().getHeight()), 100, os);
                 byte[] jpegByteArray = os.toByteArray();
-
-                Bitmap bitmap = BitmapFactory.decodeByteArray(jpegByteArray, 0, jpegByteArray.length);
-
+                bitmap = BitmapFactory.decodeByteArray(jpegByteArray, 0, jpegByteArray.length);
                 if (bitmap != null) {
                     bitmap = rotateImage(bitmap, frame.getRotation());
-
-                    bitmap = getViewFinderArea(bitmap);
-
+                    Bitmap bitmap = processImageByFrameDetectFace(MrzScanFragment.this.bitmap);
                     originalBitmap = bitmap;
-
                     scannable = getScannableArea(bitmap);
-
                     processOCR = new ProcessOCR();
                     processOCR.setBitmap(scannable);
                     if (getActivity() != null) {
                         getActivity().runOnUiThread(() -> processOCR.execute());
+//                        croppedImage.setImageBitmap(originalBitmap);
                     }
                 }
             }
         }
     };
 
-    private Bitmap getViewFinderArea(Bitmap bitmap) {
-        int sizeInPixel = getResources().getDimensionPixelSize(R.dimen.frame_margin);
-        int center = bitmap.getHeight() / 2;
-
-        int left = sizeInPixel;
-        int right = bitmap.getWidth() - sizeInPixel;
-        int width = right - left;
-        int frameHeight = (int) (width / 1.42f); // Passport's size (ISO/IEC 7810 ID-3) is 125mm × 88mm
-
-        int top = center - (frameHeight / 2);
-
-        bitmap = Bitmap.createBitmap(bitmap, left, top,
-                width, frameHeight);
-
-        return bitmap;
-    }
-
-    private Bitmap getScannableArea(Bitmap bitmap) {
-        int top = bitmap.getHeight() * 4 / 10;
-
-        bitmap = Bitmap.createBitmap(bitmap, 0, top,
-                bitmap.getWidth(), bitmap.getHeight() - top);
-
-        return bitmap;
-    }
 
     private Bitmap rotateImage(Bitmap bitmap, int rotate) {
         Log.v(TAG, "Rotation: " + rotate);
@@ -211,28 +233,52 @@ public class PassportScanFragment extends Fragment {
         return bitmap;
     }
 
-    /**
-     * reduces the size of the image
-     *
-     * @param image
-     * @param maxSize
-     * @return
-     */
-    public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
-        int width = image.getWidth();
-        int height = image.getHeight();
+    protected Bitmap processImageByFrameDetectFace(Bitmap image) {
+        float cropAreaWidthScale = 1;
 
-        float bitmapRatio = (float) width / (float) height;
-        if (bitmapRatio > 1) {
-            width = maxSize;
-            height = (int) (width / bitmapRatio);
-        } else {
-            height = maxSize;
-            width = (int) (height * bitmapRatio);
+        if (previewSize == null) {
+            tryToGetPreviewSize();
         }
-        return Bitmap.createScaledBitmap(image, width, height, true);
+
+        int sizeInPixel = getResources().getDimensionPixelSize(R.dimen._12sdp);
+        if (screenSizes.x != previewSize.getWidth()) {
+            cropAreaWidthScale = ((float) screenSizes.x) / ((float) previewSize.getWidth());
+        }
+
+        float coeffiecent = 1.54f;
+        if (config.getDocType() == DocType.DOC_TYPE_PASSPORT) {
+            coeffiecent = 1.42f;
+        }
+
+        int cropAreaWidth = (int) ((viewFinder.getCropRecF().right - viewFinder.getCropRecF().left) * cropAreaWidthScale);
+        int cropAreaHeight = (int) (cropAreaWidth / coeffiecent);// Passport's size (ISO/IEC 7810 ID-3) is 125mm × 88mm
+        cropAreaHeight -= sizeInPixel;
+        return ImageUtils.cropArea(image, cropAreaWidth, cropAreaHeight);
     }
 
+    private void tryToGetPreviewSize() {
+        try {
+            Field cameraPreview = camera.getClass().getDeclaredField("mCameraPreview");
+            cameraPreview.setAccessible(true);
+            CameraPreview preview = (CameraPreview) cameraPreview.get(camera);
+            if (preview != null) {
+                previewSize = preview.getSurfaceSize();
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Bitmap getScannableArea(Bitmap bitmap) {
+        int top = bitmap.getHeight() * 4 / 10;
+
+        bitmap = Bitmap.createBitmap(bitmap, 0, top,
+                bitmap.getWidth(), bitmap.getHeight() - top);
+
+        return bitmap;
+    }
+
+    @SuppressLint("StaticFieldLeak")
     private class ProcessOCR extends AsyncTask {
 
         Bitmap bitmap = null;
@@ -280,9 +326,9 @@ public class PassportScanFragment extends Fragment {
 
     private Bitmap processImageOrientation(Frame frame) {
 
-        YuvImage yuvImage = new YuvImage(frame.getGrayscaleImageData().array(), frame.getMetadata().getFormat(), frame.getMetadata().getWidth(), frame.getMetadata().getHeight(), null);
+        YuvImage yuvImage = new YuvImage(frame.getData(), ImageFormat.NV21, frame.getSize().getWidth(), frame.getSize().getHeight(), null);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        yuvImage.compressToJpeg(new Rect(0, 0, frame.getMetadata().getWidth(), frame.getMetadata().getHeight()), 100, byteArrayOutputStream);
+        yuvImage.compressToJpeg(new Rect(0, 0, frame.getSize().getWidth(), frame.getSize().getHeight()), 50, byteArrayOutputStream);
         byte[] jpegArray = byteArrayOutputStream.toByteArray();
         Bitmap bitmap = BitmapFactory.decodeByteArray(jpegArray, 0, jpegArray.length);
 
@@ -329,15 +375,18 @@ public class PassportScanFragment extends Fragment {
         return rotatedImage;
     }
 
-    @SuppressLint("CheckResult")
-    void processImageOnRemoteServer(Bitmap imageBitmap) {
 
+    @SuppressLint("CheckResult")
+    void processImageOnRemoteServer(Bitmap imageBitmap, int bottom) {
+//        imageBitmap = processImageByFrameDetectFace(imageBitmap, bottom);
         if (imageBitmap == null) {
             return;
         }
-
+//        croppedImage.setImageBitmap(imageBitmap);
         String base64Image = ImageUtils.getImageBase64(imageBitmap);
 
+        isSentRequest = true;
+        camera.removeFrameProcessor(frameProcessor);
         operationsManager.uploadDocument(base64Image)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -348,48 +397,80 @@ public class PassportScanFragment extends Fragment {
                         });
     }
 
-    private void showRecommendationsLayout() {
-        if (getView() != null) {
-            setRecommendationItemData(getView().findViewById(R.id.recommendation_great), getString(R.string.great), R.drawable.ic_boy_great, R.drawable.ic_success);
-            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_glasses), getString(R.string.no_glasses), R.drawable.ic_boy_glasses, R.drawable.ic_error);
-            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_shadow), getString(R.string.no_shadow), R.drawable.ic_boy_shadow, R.drawable.ic_error);
-            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_flash), getString(R.string.no_flash), R.drawable.ic_boy_flash, R.drawable.ic_error);
-            ((TextView) getView().findViewById(R.id.title_recommendation)).setText(getString(R.string.recommendations));
-            getView().findViewById(R.id.btn_continue).setOnClickListener(v -> openFaceDetectorActivity());
-            getView().findViewById(R.id.btn_back_recommend).setOnClickListener(v -> {
-                if (getActivity() != null) {
-                    getActivity().finish();
-                }
-            });
-            recommendationsLayout.setVisibility(View.VISIBLE);
-        }
-    }
-
     private void openFaceDetectorActivity() {
         Intent intent = new Intent(getContext(), FaceDetectorActivity.class);
         intent.putExtra(DocumentScannerActivity.EXTRA_CONFIG, config);
         startActivity(intent);
-        getActivity().finish();
+        if (getActivity() != null) {
+            getActivity().finish();
+        }
     }
 
-    private void setRecommendationItemData(View itemView, String titleRes, int iconRes, int statusIconRes) {
-        ((TextView) itemView.findViewById(R.id.txt_recommend_text)).setText(titleRes);
-        ((ImageView) itemView.findViewById(R.id.person_icon)).setImageResource(iconRes);
-        ((ImageView) itemView.findViewById(R.id.icon_recommendation)).setImageResource(statusIconRes);
+    private boolean isConfigIdCardAndScannedTD(MrzFormat format) {
+        return config.getDocType() == DocType.DOC_TYPE_ID_CARD && format == MrzFormat.PASSPORT;
     }
 
+    private boolean isScannedPassportAndConfigIsPassport(MrzFormat format) {
+        return config.getDocType() == DocType.DOC_TYPE_PASSPORT && format != MrzFormat.PASSPORT;
+    }
 
     private void initTextHelper() {
         Activity activity = getActivity();
         if (activity != null) {
-            textRecognitionHelper = new TextRecognitionHelper(activity, mrzText -> {
-                compressBitmap(originalBitmap, "mrzimage.png");
-                compressBitmap(scannable, "scannable.png");
-                Log.e("Found MRZ", mrzText);
-                processImageOnRemoteServer(scannable);
-                activity.runOnUiThread(this::showRecommendationsLayout);
+            textRecognitionHelper = new TextRecognitionHelper(activity, new TextRecognitionHelper.OnMRZScanned() {
+                @Override
+                public void onScanned(String mrzText, ArrayList<Rect> zones, MrzFormat format) {
+//                    activity.runOnUiThread(() -> {
+//                        debugTxt.setText(mrzText);
+//                    });
+                    if (isConfigIdCardAndScannedTD(format) || isScannedPassportAndConfigIsPassport(format)) {
+//                        Toast.makeText(activity, "DocType: " + config.getDocType().getName() + ", Scanned: " + format, Toast.LENGTH_LONG).show();
+                        Toast.makeText(activity, "Wrong document type. Please scan " + config.getDocType().getName(), Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    try {
+                        camera.stopVideo();
+                        camera.close();
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+                    if (!isSentRequest) {
+                        compressBitmap(originalBitmap, "mrzimage.png");
+                        compressBitmap(scannable, "scannable.png");
+                        Log.e("Found MRZ", mrzText);
+                        int bottom = -1;
+                        if (!zones.isEmpty()) {
+                            if (zones.get(0) != null) {
+                                bottom = zones.get(0).bottom;
+                                for (int i = 1; i < zones.size(); i++) {
+                                    Rect rect = zones.get(i);
+                                    if (rect != null) {
+                                        bottom = Math.max(bottom, rect.bottom);
+                                    }
+                                }
+                            }
+                        }
+                        processImageOnRemoteServer(originalBitmap, bottom);
+                        new Handler().postDelayed(MrzScanFragment.this::openFaceDetectorActivity, 0);
+                    }
+                }
+
+                @Override
+                public void textDetected(String text) {
+//                    activity.runOnUiThread(() -> {
+//                        txtTitle.setText(text);
+//                    });
+                }
+
+                @Override
+                public void possibleMrzFound(String text) {
+//                    activity.runOnUiThread(() -> {
+//                        debugTxt.setText(text);
+//                    });
+                }
             });
         }
+
     }
 
     private void compressBitmap(Bitmap bitmap, String name) {
@@ -397,7 +478,7 @@ public class PassportScanFragment extends Fragment {
         if (activity != null) {
             try {
                 FileOutputStream fos = new FileOutputStream(activity.getFilesDir().getAbsolutePath() + "/" + name);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 50, fos);
                 fos.close();
             } catch (Exception e) {
                 e.printStackTrace();

@@ -78,7 +78,8 @@ dependencies {
     api 'com.google.android.gms:play-services-vision:20.0.0'
     api 'org.tensorflow:tensorflow-lite:+'
     api 'com.otaliastudios:cameraview:2.2.0'
-    implementation 'com.rmtheis:tess-two:9.0.0'
-    implementation('org.tensorflow:tensorflow-lite:0.0.0-nightly') { changing = true }
+//    implementation 'com.rmtheis:tess-two:9.1.0'
+    implementation 'com.intuit.sdp:sdp-android:1.0.6'
+    implementation 'cz.adaptech.android:tesseract4android:2.1.0'
 
 }

@@ -10,6 +10,12 @@ public class Score {
     @SerializedName("facialLiveness")
     private boolean facialLiveness;
 
+    @SerializedName("predictedGender")
+    private String predictedGender;
+
+    @SerializedName("predictedAge")
+    private String predictedAge;
+
     private String base64Image;
 
     public float getFacialScore() {
@@ -34,6 +40,22 @@ public class Score {
 
     public void setBase64Image(String base64Image) {
         this.base64Image = base64Image;
+    }
+
+    public String getPredictedGender() {
+        return predictedGender;
+    }
+
+    public void setPredictedGender(String predictedGender) {
+        this.predictedGender = predictedGender;
+    }
+
+    public String getPredictedAge() {
+        return predictedAge;
+    }
+
+    public void setPredictedAge(String predictedAge) {
+        this.predictedAge = predictedAge;
     }
 
     @Override

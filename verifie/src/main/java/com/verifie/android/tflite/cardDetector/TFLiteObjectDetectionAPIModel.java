@@ -231,9 +231,7 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
                             outputScores[0][i],
                             detection));
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            Trace.endSection(); // "recognizeImage"
-        }
+        Trace.endSection(); // "recognizeImage"
         return recognitions;
     }
 

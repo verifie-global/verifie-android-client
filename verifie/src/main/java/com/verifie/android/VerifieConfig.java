@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment;
 import com.verifie.android.ui.BaseDocumentScannerFragment;
 import com.verifie.android.ui.DefaultDocumentScannerFragment;
 import com.verifie.android.ui.FaceDetectorGmsFragment;
-import com.verifie.android.ui.PassportScanFragment;
+import com.verifie.android.ui.MrzScanFragment;
 
 public class VerifieConfig implements Parcelable {
 
@@ -22,7 +22,7 @@ public class VerifieConfig implements Parcelable {
     private DocType docType;
 
     private Class<? extends BaseDocumentScannerFragment> documentScannerFragment = DefaultDocumentScannerFragment.class;
-    private Class<? extends PassportScanFragment> passportScannerFragment = PassportScanFragment.class;
+    private Class<? extends MrzScanFragment> passportScannerFragment = MrzScanFragment.class;
     private Class<? extends FaceDetectorGmsFragment> faceDetectorFragment = FaceDetectorGmsFragment.class;
 
     public VerifieConfig(String licenseKey, String personId, DocType docType) {
