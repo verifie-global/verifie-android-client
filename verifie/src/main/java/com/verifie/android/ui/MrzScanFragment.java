@@ -19,7 +19,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -79,7 +78,7 @@ public class MrzScanFragment extends Fragment {
     private OperationsManager operationsManager;
     private VerifieConfig config;
     private Bitmap bitmap;
-//    private ImageView croppedImage;
+    //    private ImageView croppedImage;
     private boolean isSentRequest = false;
     //    private TextView debugTxt;
     private TextView txtTitle;
@@ -425,7 +424,7 @@ public class MrzScanFragment extends Fragment {
 //                    });
                     if (isConfigIdCardAndScannedTD(format) || isScannedPassportAndConfigIsPassport(format)) {
 //                        Toast.makeText(activity, "DocType: " + config.getDocType().getName() + ", Scanned: " + format, Toast.LENGTH_LONG).show();
-                        Toast.makeText(activity, "Wrong document type. Please scan " + config.getDocType().getName(), Toast.LENGTH_LONG).show();
+//                        Toast.makeText(activity, "Wrong document type. Please scan " + config.getDocType().getName(), Toast.LENGTH_LONG).show();
                         return;
                     }
                     try {

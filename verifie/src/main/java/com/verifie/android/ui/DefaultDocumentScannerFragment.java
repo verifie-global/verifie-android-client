@@ -12,7 +12,6 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -208,8 +207,10 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
                 stop = true;
                 processImageOnRemoteServer(imageBitmap);
                 if (getActivity() != null) {
-                    VibrationHelper.vibrate(getActivity());
-                    ((DocumentScannerActivity) getActivity()).openIdCardBacksideScanner();
+                    getActivity().runOnUiThread(() -> {
+                        VibrationHelper.vibrate(getActivity());
+                        ((DocumentScannerActivity) getActivity()).openIdCardBacksideScanner();
+                    });
                 }
             }
         }

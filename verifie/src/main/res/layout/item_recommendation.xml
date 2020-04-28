@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="74dp"
-    android:layout_marginTop="32dp"
-    android:paddingLeft="36dp"
-    android:paddingRight="36dp"
+    android:layout_height="@dimen/_50sdp"
+    android:layout_marginTop="@dimen/_20sdp"
+    android:paddingLeft="@dimen/_30sdp"
+    android:paddingRight="@dimen/_30sdp"
     tools:background="#000000">
 
     <ImageView

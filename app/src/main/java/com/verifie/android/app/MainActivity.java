@@ -78,9 +78,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     }
 
     private void getArguments() {
-        Intent intent = getIntent(
-
-        );
+        Intent intent = getIntent();
         if (intent != null) {
             Bundle bundle = intent.getExtras();
             if (bundle != null && bundle.get(Constants.DocTypes.KEY) != null) {
@@ -100,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         super.onResume();
         showDocuments();
         startVerifie();
+//        startActivity(new Intent(this, FaceDetectorActivity.class));
     }
 
     private void startVerifie() {
@@ -206,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     }
 
     private void setSpannableText(TextView textView, String prefix, String suffix) {
-        if(suffix == null || suffix.isEmpty()) return;
+        if (suffix == null || suffix.isEmpty()) return;
         String wholeText = prefix + "\n" + suffix;
         SpannableString spannableString = new SpannableString(wholeText);
         int startIndex = wholeText.indexOf(suffix);
@@ -217,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
 
     @Override
     public void onDocumentReceived(Document document) {
-        if(document == null){
+        if (document == null) {
 //            showError
             return;
         }

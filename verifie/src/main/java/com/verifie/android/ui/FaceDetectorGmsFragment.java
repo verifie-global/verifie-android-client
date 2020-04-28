@@ -12,7 +12,6 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -67,10 +66,14 @@ import io.reactivex.schedulers.Schedulers;
  * A simple {@link Fragment} subclass.
  */
 public class FaceDetectorGmsFragment extends Fragment {
-    //    public static final float FaceSolidityMin = 0.040F;
-//    public static final float FaceSolidityMax = 0.090F;
-    public static final float FaceSolidityMin = 0.125F;
-    public static final float FaceSolidityMax = 0.190F;
+    //    public static final float FaceSolidityMin = 0.135F;
+//    public static final float FaceSolidityMax = 0.275F;
+    public static final float INVALID = -1f;
+    public static final float FaceSolidityMinPercentage = 0.01F;
+    public static final float FaceSolidityMaxPercentage = 0.0277F;
+    public static float FaceSolidityMin = INVALID;
+    public static float FaceSolidityMax = INVALID;
+
     public static final int IMAGE_SIZE = 96;
     public static final int SECONDS_TO_HOLD = 5;
     public static final int REALS_MIN_PERCENTAGE = 40;
@@ -145,7 +148,6 @@ public class FaceDetectorGmsFragment extends Fragment {
                         model.bitmapOvalShape = ImageUtils.cropArea(model.bitmapOriginal, model.ovalRect);
                         compressBitmap(model.bitmapOvalShape, "selfie.png");
                         final String imageBase64 = ImageUtils.getImageBase64(model.bitmapOvalShape);
-                        setText("Fake:  " + fakeCount + " < Real:  " + realCount + "  ---- sending selfie image to server");
                         OperationsManager.getInstance().uploadFace(imageBase64)
                                 .subscribeOn(Schedulers.newThread())
                                 .observeOn(AndroidSchedulers.mainThread())
@@ -170,7 +172,6 @@ public class FaceDetectorGmsFragment extends Fragment {
                     }
                 } else {
                     isAnimationStarted = false;
-                    setText("Either  - Fake:  " + fakeCount + " > Real:  " + realCount + " Or canceled, face was moved out from oval");
                 }
             }
 
@@ -435,12 +436,24 @@ public class FaceDetectorGmsFragment extends Fragment {
         @Override
         public void onUpdate(FaceDetector.Detections<Face> detectionResults, Face face) {
             if (stopped) return;
+            if (FaceSolidityMin == INVALID) {
+                FaceSolidityMin = mPreview.getWidth() * FaceSolidityMinPercentage / 100;
+            }
+            if (FaceSolidityMax == INVALID) {
+                FaceSolidityMax = mPreview.getWidth() * FaceSolidityMaxPercentage / 100;
+            }
             float fullArea = mPreview.getWidth() * mPreview.getHeight();
             float faceWidth = face.getWidth();
             float faceHeight = face.getHeight();
             float faceArea = faceWidth * faceHeight;
             float solidity = faceArea / fullArea;
-            System.out.println("solidity -- " + solidity);
+            System.out.println("solidity -- width: " + mPreview.getWidth() + ", height: " + mPreview.getHeight());
+            System.out.println("solidity -- fullArea: " + fullArea);
+            System.out.println("solidity -- faceWidth: " + faceWidth + ", faceHeight: " + faceHeight);
+            System.out.println("solidity -- faceArea: " + faceArea);
+            System.out.println("solidity -- solidity: " + solidity);
+            System.out.println("solidity -- solidityMin: " + FaceSolidityMin);
+            System.out.println("solidity -- solidityMax: " + FaceSolidityMax);
             if (solidity > FaceSolidityMin) {
                 if (solidity < FaceSolidityMax) {
                     mainHandler.post(() -> {
