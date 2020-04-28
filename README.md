@@ -23,7 +23,7 @@ allprojects {
 **Step 2.** Add the dependency
 
 ```gradle
-implementation 'com.github.verifie-global:verifie-android-client:v1.0.7'
+implementation 'com.github.verifie-global:verifie-android-client:v2.0.0'
 ```
 
 # Usage
