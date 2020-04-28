@@ -16,7 +16,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.crashlytics.android.Crashlytics;
 import com.verifie.android.DocType;
 import com.verifie.android.Verifie;
 import com.verifie.android.VerifieCallback;
@@ -25,9 +24,7 @@ import com.verifie.android.VerifieConfig;
 import com.verifie.android.VerifieTextConfig;
 import com.verifie.android.api.model.res.Document;
 import com.verifie.android.api.model.res.Score;
-import com.verifie.android.ui.FaceDetectorActivity;
 
-import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity implements VerifieCallback {
 
@@ -60,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
         getArguments();
         documentImage = findViewById(R.id.document_image);
@@ -104,7 +100,6 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         super.onResume();
         showDocuments();
         startVerifie();
-//        startActivity(new Intent(this, FaceDetectorActivity.class));
     }
 
     private void startVerifie() {
