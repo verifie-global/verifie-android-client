@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.verifie.android.DocType;
@@ -84,12 +85,12 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
             if (bundle != null && bundle.get(Constants.DocTypes.KEY) != null) {
                 docType = bundle.getInt(Constants.DocTypes.KEY, Constants.DocTypes.PASSPORT);
             } else {
-//                docType = Constants.DocTypes.PASSPORT;
-                docType = Constants.DocTypes.NATIONAL_ID;
+                docType = Constants.DocTypes.PASSPORT;
+//                docType = Constants.DocTypes.NATIONAL_ID;
             }
         } else {
-//            docType = Constants.DocTypes.PASSPORT;
-            docType = Constants.DocTypes.NATIONAL_ID;
+            docType = Constants.DocTypes.PASSPORT;
+//            docType = Constants.DocTypes.NATIONAL_ID;
         }
     }
 
@@ -167,6 +168,14 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
             return;
         }
 
+        if (document.getError() != null) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage(document.getError())
+                    .setPositiveButton("OK", null)
+                    .show();
+        }
+
         if (documentImageBase64 != null && !documentImageBase64.isEmpty()) {
             byte[] decodedImage = Base64.decode(documentImageBase64, Base64.DEFAULT);
             Bitmap bitmap = BitmapFactory.decodeByteArray(decodedImage, 0, decodedImage.length);
@@ -217,14 +226,13 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     @Override
     public void onDocumentReceived(Document document) {
         if (document == null) {
-//            showError
             return;
         }
         if (document.getDocumentFaceImage() != null && !document.getDocumentFaceImage().isEmpty()) {
             documentImageBase64 = document.getDocumentFaceImage();
         }
 
-        if (document.getDocumentType() != null && !document.getDocumentType().isEmpty()) {
+        if (document.getError() != null || document.getDocumentType() != null && !document.getDocumentType().isEmpty()) {
             this.document = document;
         }
     }

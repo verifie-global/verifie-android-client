@@ -6,11 +6,11 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.Camera;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
-import android.util.Size;
 import android.view.Surface;
 import android.view.View;
 import android.widget.ImageView;
@@ -21,13 +21,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.verifie.android.DocType;
 import com.verifie.android.OperationsManager;
 import com.verifie.android.R;
 import com.verifie.android.VerifieConfig;
 import com.verifie.android.api.model.res.Document;
 import com.verifie.android.api.model.res.ResponseModel;
 import com.verifie.android.tflite.cardDetector.ImageUtils;
+import com.verifie.android.tflite.cardDetector.Size;
 import com.verifie.android.ui.widget.CameraPreview;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -116,7 +116,9 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
 
         preview.stop();
 
-        handlerThread.quitSafely();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            handlerThread.quitSafely();
+        }
         try {
             handlerThread.join();
             handlerThread = null;
@@ -238,10 +240,12 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
 
     private void handleDocument(Document document) {
         if (document == null || document.getDocumentType() == null || !config.getDocType().getName().equalsIgnoreCase(document.getDocumentType()) || !document.isDocumentValid()) {
-            operationsManager.onDocumentReceived(null);
-        } else {
-            operationsManager.onDocumentReceived(document);
+            if (document == null) {
+                document = new Document();
+            }
+            document.setError("Invalid Document Type");
         }
+        operationsManager.onDocumentReceived(document);
     }
 
     protected int getScreenOrientation() {
@@ -274,8 +278,11 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
         if (errorMessage == null || errorMessage.isEmpty()) {
             errorMessage = "Please take a document photo again.";
         }
-        operationsManager.onDocumentReceived(null);
+        Document document = new Document();
+        document.setError(errorMessage);
+        operationsManager.onDocumentReceived(document);
     }
+
 
     public abstract void onDocumentScanFinished(boolean nextPageRequired);
 

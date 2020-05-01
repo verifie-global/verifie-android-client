@@ -172,6 +172,7 @@ public class FaceDetectorGmsFragment extends Fragment {
                     }
                 } else {
                     isAnimationStarted = false;
+                    oval_overlay_animation.stopAnim();
                 }
             }
 
@@ -447,10 +448,10 @@ public class FaceDetectorGmsFragment extends Fragment {
             float faceHeight = face.getHeight();
             float faceArea = faceWidth * faceHeight;
             float solidity = faceArea / fullArea;
-            System.out.println("solidity -- width: " + mPreview.getWidth() + ", height: " + mPreview.getHeight());
-            System.out.println("solidity -- fullArea: " + fullArea);
-            System.out.println("solidity -- faceWidth: " + faceWidth + ", faceHeight: " + faceHeight);
-            System.out.println("solidity -- faceArea: " + faceArea);
+//            System.out.println("solidity -- width: " + mPreview.getWidth() + ", height: " + mPreview.getHeight());
+//            System.out.println("solidity -- fullArea: " + fullArea);
+//            System.out.println("solidity -- faceWidth: " + faceWidth + ", faceHeight: " + faceHeight);
+//            System.out.println("solidity -- faceArea: " + faceArea);
             System.out.println("solidity -- solidity: " + solidity);
             System.out.println("solidity -- solidityMin: " + FaceSolidityMin);
             System.out.println("solidity -- solidityMax: " + FaceSolidityMax);
@@ -525,29 +526,14 @@ public class FaceDetectorGmsFragment extends Fragment {
                 if (faceSparseArray.size() > 0) {
                     Face face = faceSparseArray.get(faceSparseArray.keyAt(0));
                     PointF XY = face.getPosition();
-                    RectF faceRectF = new RectF(XY.x, XY.y, XY.x + face.getWidth(), XY.y + face.getHeight());
-                    if (oval_overlay_animation.getVisibleBounds().contains(faceRectF)) {
-//                        YuvImage yuvImage = new YuvImage(frame.getGrayscaleImageData().array(), frame.getMetadata().getFormat(), frame.getMetadata().getWidth(), frame.getMetadata().getHeight(), null);
-//                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//                        yuvImage.compressToJpeg(new Rect(0, 0, frame.getMetadata().getWidth(), frame.getMetadata().getHeight()), 50, byteArrayOutputStream);
-//                        byte[] jpegArray = byteArrayOutputStream.toByteArray();
-//                        Bitmap bitmap = BitmapFactory.decodeByteArray(jpegArray, 0, jpegArray.length);
-                        Model model = new Model();
-                        model.bitmap = processImageOrientation(frame);
-                        model.bitmapOriginal = model.bitmap;
-                        model.ovalRect = oval_overlay_animation.getVisibleBounds();
+                    Model model = new Model();
+                    model.bitmap = processImageOrientation(frame);
+                    model.bitmapOriginal = model.bitmap;
+                    model.ovalRect = oval_overlay_animation.getVisibleBounds();
 
-                        if (XY.x > 0 && XY.y > 0) {
-                            model.rect = new Rect(((int) XY.x), ((int) XY.y), ((int) (face.getWidth())), ((int) (face.getHeight())));
-                            new CropBitmapTask().execute(model);
-                        }
-                    } else {
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                tvInfo.setText("");
-                                resetData();
-                            });
-                        }
+                    if (XY.x > 0 && XY.y > 0) {
+                        model.rect = new Rect(((int) XY.x), ((int) XY.y), ((int) (face.getWidth())), ((int) (face.getHeight())));
+                        new CropBitmapTask().execute(model);
                     }
                 }
             }
