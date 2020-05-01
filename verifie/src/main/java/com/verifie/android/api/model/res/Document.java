@@ -43,6 +43,8 @@ public class Document {
     @SerializedName("nextPage")
     private boolean nextPage;
 
+    private String error;
+
     public String getDocumentType() {
         return capitalize(documentType);
     }
@@ -182,5 +184,13 @@ public class Document {
             return unformatted.replace("-", "/");
         }
         return unformatted;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

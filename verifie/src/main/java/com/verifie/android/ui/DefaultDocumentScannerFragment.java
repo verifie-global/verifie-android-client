@@ -7,7 +7,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Size;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +27,7 @@ import com.verifie.android.VerifieConfig;
 import com.verifie.android.VerifieTextConfig;
 import com.verifie.android.tflite.cardDetector.Classifier;
 import com.verifie.android.tflite.cardDetector.ImageUtils;
+import com.verifie.android.tflite.cardDetector.Size;
 import com.verifie.android.tflite.cardDetector.TFLiteObjectDetectionAPIModel;
 import com.verifie.android.ui.widget.FrameOverlay;
 import com.verifie.android.util.VibrationHelper;
@@ -240,8 +240,8 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
 
         croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888);
         rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888);
-        previewWidth = size.getWidth();
-        previewHeight = size.getHeight();
+        previewWidth = size.width;
+        previewHeight = size.height;
 
         sensorOrientation = rotation - getScreenOrientation();
 

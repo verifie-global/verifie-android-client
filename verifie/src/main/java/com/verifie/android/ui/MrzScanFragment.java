@@ -312,17 +312,21 @@ public class MrzScanFragment extends Fragment {
         if (documentScanResponseModelResponseModel.getOpCode() == 0) {
             handleDocument(documentScanResponseModelResponseModel.getResult());
         } else {
-            operationsManager.onDocumentReceived(null);
+            Document document = new Document();
+            document.setError(documentScanResponseModelResponseModel.getOpDesc());
+            operationsManager.onDocumentReceived(document);
         }
     }
 
 
     private void handleDocument(Document document) {
-        if (document.getDocumentType() == null || !config.getDocType().getName().equalsIgnoreCase(document.getDocumentType()) || !document.isDocumentValid()) {
-            operationsManager.onDocumentReceived(null);
-        } else {
-            operationsManager.onDocumentReceived(document);
+        if (document == null || document.getDocumentType() == null || !config.getDocType().getName().equalsIgnoreCase(document.getDocumentType()) || !document.isDocumentValid()) {
+            if (document == null) {
+                document = new Document();
+            }
+            document.setError("Invalid Document Type");
         }
+        operationsManager.onDocumentReceived(document);
     }
 
     private Bitmap processImageOrientation(Frame frame) {
@@ -394,7 +398,9 @@ public class MrzScanFragment extends Fragment {
                 .subscribe(this::handleDocumentScanResult,
                         throwable -> {
                             Log.e(TAG, "accept: ", throwable);
-                            operationsManager.onDocumentReceived(null);
+                            Document document = new Document();
+                            document.setError(throwable.getLocalizedMessage());
+                            operationsManager.onDocumentReceived(document);
                         });
     }
 
