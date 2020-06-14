@@ -136,7 +136,7 @@ public class MrzScanFragment extends Fragment {
 //        debugTxt = view.findViewById(R.id.txt_debug);
         view.findViewById(R.id.btn_back).setOnClickListener(v -> {
             if (getActivity() != null) {
-                getActivity().finish();
+                ((DocumentScannerActivity) getActivity()).finish(true);
             }
         });
 
@@ -409,7 +409,7 @@ public class MrzScanFragment extends Fragment {
         intent.putExtra(DocumentScannerActivity.EXTRA_CONFIG, config);
         startActivity(intent);
         if (getActivity() != null) {
-            getActivity().finish();
+            ((DocumentScannerActivity) getActivity()).finish(false);
         }
     }
 

@@ -87,6 +87,14 @@ public final class CameraPreview extends SurfaceView implements SurfaceHolder.Ca
         mCamera = Camera.open(mCameraId);
 
         Camera.Parameters cameraParams = mCamera.getParameters();
+        try {
+            cameraParams.set("mode", "m");
+            cameraParams.set("aperture", "28"); //can be 28 32 35 40 45 50 56 63 71 80 on default zoom
+            cameraParams.set("shutter-speed", 1 / 500); // depends on camera, eg. 1 means longest
+            cameraParams.set("iso", 200);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
         mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
         mPictureSizeList = cameraParams.getSupportedPictureSizes();
         cameraParams.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);

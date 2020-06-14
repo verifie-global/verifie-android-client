@@ -3,9 +3,11 @@ package com.verifie.android.ui;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.verifie.android.OperationsManager;
 import com.verifie.android.R;
 import com.verifie.android.VerifieConfig;
 
@@ -31,7 +33,7 @@ public class FaceDetectorActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(!faceDetectorGmsFragment.isLoading()){
+        if (!faceDetectorGmsFragment.isLoading()) {
             super.onBackPressed();
         }
     }
@@ -52,5 +54,11 @@ public class FaceDetectorActivity extends AppCompatActivity {
         Configuration configuration = getResources().getConfiguration();
         configuration.locale = createLocale(language);
         getResources().updateConfiguration(configuration, displayMetrics);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        OperationsManager.getInstance().notifySessionFinished();
     }
 }

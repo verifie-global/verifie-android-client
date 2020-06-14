@@ -61,7 +61,7 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
     private FaceDetector faceDetector;
     private Bitmap bitmapInRightOrientation;
 
-//    private ImageView croppedImage;
+    //    private ImageView croppedImage;
     private volatile boolean stop = false;
 
     private FrameOverlay cropperFrameHolder;
@@ -86,7 +86,7 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
 
         view.findViewById(R.id.btn_back).setOnClickListener(v -> {
             if (getActivity() != null) {
-                getActivity().finish();
+                ((DocumentScannerActivity) getActivity()).finish(true);
             }
         });
 
@@ -193,17 +193,21 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
 
     private void findFaceOnImage(Bitmap imageBitmap) {
         if (imageBitmap != null && !imageBitmap.isRecycled()) {
-            faceDetector = new FaceDetector.Builder(getContext())
-                    .setTrackingEnabled(false)
-                    .setLandmarkType(FaceDetector.ALL_LANDMARKS)
-                    .build();
-            if (!faceDetector.isOperational()) {
-                Log.w(TAG, "Face detector dependencies are not yet available.");
+            if (faceDetector == null) {
+                faceDetector = new FaceDetector.Builder(getContext())
+                        .setTrackingEnabled(false)
+                        .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+                        .setMode(FaceDetector.ACCURATE_MODE)
+                        .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
+                        .build();
+                if (!faceDetector.isOperational()) {
+                    Log.w(TAG, "Face detector dependencies are not yet available.");
+                }
             }
 
             Frame frame = new Frame.Builder().setBitmap(imageBitmap).build();
             SparseArray<Face> faces = faceDetector.detect(frame);
-            if (faces.size() > 0) {
+            if (faces.size() > 0 && faces.get(faces.keyAt(0)).getLandmarks().size() > 11) {
                 stop = true;
                 processImageOnRemoteServer(imageBitmap);
                 if (getActivity() != null) {
@@ -235,7 +239,7 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
                     Toast.makeText(
                             getContext(), "Classifier could not be initialized", Toast.LENGTH_SHORT);
             toast.show();
-            getActivity().finish();
+            ((DocumentScannerActivity) getActivity()).finish(true);
         }
 
         croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888);
