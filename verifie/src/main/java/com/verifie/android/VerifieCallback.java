@@ -10,4 +10,6 @@ public interface VerifieCallback {
     void onDocumentReceived(Document document);
 
     void onScoreReceived(Score score);
+
+    void onSessionEnded();
 }

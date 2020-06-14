@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     private TextView faceScore;
     private TextView facialLiveness;
     private TextView nextPage;
+    private TextView predictedGender;
+    private TextView predictedAge;
     private int docType;
     private boolean isVerifyStarted = false;
 
@@ -85,12 +87,12 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
             if (bundle != null && bundle.get(Constants.DocTypes.KEY) != null) {
                 docType = bundle.getInt(Constants.DocTypes.KEY, Constants.DocTypes.PASSPORT);
             } else {
-                docType = Constants.DocTypes.PASSPORT;
-//                docType = Constants.DocTypes.NATIONAL_ID;
+//                docType = Constants.DocTypes.PASSPORT;
+                docType = Constants.DocTypes.NATIONAL_ID;
             }
         } else {
-            docType = Constants.DocTypes.PASSPORT;
-//            docType = Constants.DocTypes.NATIONAL_ID;
+//            docType = Constants.DocTypes.PASSPORT;
+            docType = Constants.DocTypes.NATIONAL_ID;
         }
     }
 
@@ -114,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         colorConfig.setDocCropperFrameColor(Color.WHITE);
 
         VerifieConfig config = new VerifieConfig("licenseKey", "personId");
+
         config.setColorConfig(colorConfig);
         VerifieTextConfig textConfig = new VerifieTextConfig();
         config.setDocType(DocType.DOC_TYPE_PASSPORT);
@@ -240,5 +243,10 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     @Override
     public void onScoreReceived(Score score) {
         this.score = score;
+    }
+
+    @Override
+    public void onSessionEnded() {
+        System.out.println("-=-=-=-=-=-=  On session ended");
     }
 }

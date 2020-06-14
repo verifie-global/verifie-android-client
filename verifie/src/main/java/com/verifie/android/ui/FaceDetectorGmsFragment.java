@@ -399,6 +399,15 @@ public class FaceDetectorGmsFragment extends Fragment {
     }
 
 
+    private void positionFaceInOval() {
+        if (!isLoading()) {
+            tvInfo.setText(getString(R.string.position_your_face_in_the_oval));
+            oval_overlay_animation.stopAnim();
+            isAnimationStarted = false;
+        }
+    }
+
+
     private void onFaceScanError(String s, final boolean moveToPreviousPage) {
         if (!isLoading()) {
             oval_overlay_animation.stopAnim();
@@ -446,35 +455,38 @@ public class FaceDetectorGmsFragment extends Fragment {
             float fullArea = mPreview.getWidth() * mPreview.getHeight();
             float faceWidth = face.getWidth();
             float faceHeight = face.getHeight();
+            PointF pointF = face.getPosition();
             float faceArea = faceWidth * faceHeight;
             float solidity = faceArea / fullArea;
-//            System.out.println("solidity -- width: " + mPreview.getWidth() + ", height: " + mPreview.getHeight());
-//            System.out.println("solidity -- fullArea: " + fullArea);
-//            System.out.println("solidity -- faceWidth: " + faceWidth + ", faceHeight: " + faceHeight);
-//            System.out.println("solidity -- faceArea: " + faceArea);
-            System.out.println("solidity -- solidity: " + solidity);
-            System.out.println("solidity -- solidityMin: " + FaceSolidityMin);
-            System.out.println("solidity -- solidityMax: " + FaceSolidityMax);
-            if (solidity > FaceSolidityMin) {
-                if (solidity < FaceSolidityMax) {
-                    mainHandler.post(() -> {
-                        tvInfo.setText(R.string.hold_still);
-                        if (!isLoading() && !isAnimationStarted && !oval_overlay_animation.isRunningAnimation()) {
-                            isAnimationStarted = true;
-                            oval_overlay_animation.startAnimation(5);
+            RectF faceRectF = new RectF(pointF.x, pointF.y, pointF.x + faceWidth, pointF.y + faceHeight);
+            if (oval_overlay_animation.getVisibleBounds().contains(faceRectF)) {
+                if (solidity > FaceSolidityMin) {
+                    if (solidity < FaceSolidityMax) {
+                        mainHandler.post(() -> {
+                            tvInfo.setText(R.string.hold_still);
+                            if (!isLoading() && !isAnimationStarted && !oval_overlay_animation.isRunningAnimation()) {
+                                isAnimationStarted = true;
+                                oval_overlay_animation.startAnimation(5);
+                            }
+                        });
+                        faceDetected = true;
+                    } else {
+                        faceDetected = false;
+                        mainHandler.post(FaceDetectorGmsFragment.this::moveAway);
+                        if (seconds < SECONDS_TO_HOLD) {
+                            mainHandler.post(FaceDetectorGmsFragment.this::resetData);
                         }
-                    });
-                    faceDetected = true;
+                    }
                 } else {
                     faceDetected = false;
-                    mainHandler.post(FaceDetectorGmsFragment.this::moveAway);
+                    mainHandler.post(FaceDetectorGmsFragment.this::moveClose);
                     if (seconds < SECONDS_TO_HOLD) {
                         mainHandler.post(FaceDetectorGmsFragment.this::resetData);
                     }
                 }
             } else {
                 faceDetected = false;
-                mainHandler.post(FaceDetectorGmsFragment.this::moveClose);
+                mainHandler.post(FaceDetectorGmsFragment.this::positionFaceInOval);
                 if (seconds < SECONDS_TO_HOLD) {
                     mainHandler.post(FaceDetectorGmsFragment.this::resetData);
                 }
@@ -530,7 +542,6 @@ public class FaceDetectorGmsFragment extends Fragment {
                     model.bitmap = processImageOrientation(frame);
                     model.bitmapOriginal = model.bitmap;
                     model.ovalRect = oval_overlay_animation.getVisibleBounds();
-
                     if (XY.x > 0 && XY.y > 0) {
                         model.rect = new Rect(((int) XY.x), ((int) XY.y), ((int) (face.getWidth())), ((int) (face.getHeight())));
                         new CropBitmapTask().execute(model);

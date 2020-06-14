@@ -1,6 +1,7 @@
 package com.verifie.android;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.verifie.android.api.model.res.Document;
@@ -29,6 +30,13 @@ public class Verifie implements OperationsManager.OperationsManagerCallback {
     public void onAuthorized() {
         notifySessionStarted();
         operationsManager.startDocScanner(context);
+    }
+
+    @Override
+    public void onDestroy() {
+        if (callback != null) {
+            callback.onSessionEnded();
+        }
     }
 
     @Override

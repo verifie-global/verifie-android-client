@@ -5,7 +5,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.verifie.android.api.ApiManager;
-import com.verifie.android.api.model.res.AccessTokenModel;
 import com.verifie.android.api.model.res.Document;
 import com.verifie.android.api.model.res.ResponseModel;
 import com.verifie.android.api.model.res.Score;
@@ -13,7 +12,6 @@ import com.verifie.android.ui.DocumentScannerActivity;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class OperationsManager {
@@ -47,20 +45,11 @@ public class OperationsManager {
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        new Consumer<ResponseModel<AccessTokenModel>>() {
-                            @Override
-                            public void accept(ResponseModel<AccessTokenModel> accessTokenModelResponseModel) {
-                                accessToken = accessTokenModelResponseModel.getResult().getAccessToken();
-                                notifySessionStarted();
-                            }
+                        accessTokenModelResponseModel -> {
+                            accessToken = accessTokenModelResponseModel.getResult().getAccessToken();
+                            notifySessionStarted();
                         },
-                        new Consumer<Throwable>() {
-
-                            @Override
-                            public void accept(Throwable throwable) {
-                                Log.e(TAG, "accept: ", throwable);
-                            }
-                        });
+                        throwable -> Log.e(TAG, "accept: ", throwable));
     }
 
     public Single<ResponseModel<Document>> uploadDocument(String imageData) {
@@ -86,6 +75,12 @@ public class OperationsManager {
     private void notifySessionStarted() {
         if (callback != null) {
             callback.onAuthorized();
+        }
+    }
+
+    public void notifySessionFinished() {
+        if (callback != null) {
+            callback.onDestroy();
         }
     }
 
@@ -121,6 +116,8 @@ public class OperationsManager {
     interface OperationsManagerCallback {
 
         void onAuthorized();
+
+        void onDestroy();
 
         void onDocumentReceived(Document document);
 

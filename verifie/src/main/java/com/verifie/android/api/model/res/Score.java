@@ -16,6 +16,9 @@ public class Score {
     @SerializedName("predictedAge")
     private String predictedAge;
 
+    @SerializedName("isMatched")
+    private boolean isMatched;
+
     private String base64Image;
 
     public float getFacialScore() {
@@ -58,6 +61,14 @@ public class Score {
         this.predictedAge = predictedAge;
     }
 
+    public boolean isMatched() {
+        return isMatched;
+    }
+
+    public void setMatched(boolean matched) {
+        isMatched = matched;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -81,6 +92,10 @@ public class Score {
         return "Score{" +
                 "facialScore=" + facialScore +
                 ", facialLiveness=" + facialLiveness +
+                ", predictedGender='" + predictedGender + '\'' +
+                ", predictedAge='" + predictedAge + '\'' +
+                ", isMatched=" + isMatched +
+                ", base64Image='" + base64Image + '\'' +
                 '}';
     }
 }
