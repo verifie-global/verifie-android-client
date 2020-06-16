@@ -30,6 +30,7 @@ import com.verifie.android.tflite.cardDetector.ImageUtils;
 import com.verifie.android.tflite.cardDetector.Size;
 import com.verifie.android.tflite.cardDetector.TFLiteObjectDetectionAPIModel;
 import com.verifie.android.ui.widget.FrameOverlay;
+import com.verifie.android.util.ConvolutionMatrix;
 import com.verifie.android.util.VibrationHelper;
 
 import java.io.ByteArrayInputStream;
@@ -60,6 +61,8 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
     private Matrix cropToFrameTransform;
     private FaceDetector faceDetector;
     private Bitmap bitmapInRightOrientation;
+    private Long res;
+    private Bitmap bmp;
 
     //    private ImageView croppedImage;
     private volatile boolean stop = false;
@@ -182,7 +185,17 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
                             result.setLocation(location);
                             Bitmap bitmap = getViewFinderArea(bitmapInRightOrientation);
                             if (bitmap != null) {
-                                findFaceOnImage(bitmap);
+                                long res = new ConvolutionMatrix(3).variance(bitmap);
+//                                System.out.println("-=-=-=-=-=-=-=-=-=-= res: " + res);
+//                                if (getActivity() != null) {
+//                                    getActivity().runOnUiThread(() -> {
+//                                        croppedImage.setImageBitmap(bitmap);
+//                                        if (getView() != null) {
+//                                            ((TextView) getView().findViewById(R.id.title)).setText(String.valueOf(res));
+//                                        }
+//                                    });
+//                                }
+                                findFaceOnImage(bitmap, res);
                             }
                             break;
                         }
@@ -191,7 +204,7 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
     }
 
 
-    private void findFaceOnImage(Bitmap imageBitmap) {
+    private void findFaceOnImage(Bitmap imageBitmap, long res) {
         if (imageBitmap != null && !imageBitmap.isRecycled()) {
             if (faceDetector == null) {
                 faceDetector = new FaceDetector.Builder(getContext())
@@ -209,12 +222,21 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
             SparseArray<Face> faces = faceDetector.detect(frame);
             if (faces.size() > 0 && faces.get(faces.keyAt(0)).getLandmarks().size() > 11) {
                 stop = true;
-                processImageOnRemoteServer(imageBitmap);
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(() -> {
-                        VibrationHelper.vibrate(getActivity());
-                        ((DocumentScannerActivity) getActivity()).openIdCardBacksideScanner();
-                    });
+                if (bmp == null) {
+                    this.res = res;
+                    this.bmp = imageBitmap;
+                } else {
+                    if (this.res >= res) {
+                        processImageOnRemoteServer(this.bmp);
+                    } else {
+                        processImageOnRemoteServer(imageBitmap);
+                    }
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            VibrationHelper.vibrate(getActivity());
+                            ((DocumentScannerActivity) getActivity()).openIdCardBacksideScanner();
+                        });
+                    }
                 }
             }
         }
