@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">verifie</string>
-    <string name="permission_camera_rationale">camera permission is needed this app to work</string>
+    <string name="permission_camera_rationale">Այս ծրագիրը աշխատելու համար անհրաժեշտ է խցիկի թույլտվություն</string>
     <string name="move_away">"Հեռվացրեք հեռախոսը"</string>
     <string name="move_close">"Մոտեցրեք հեռախոսը"</string>
-    <string name="result_formatted">"Reals = %2$d \n Fakes = %2$d "</string>
     <string name="hold_still">"Անշարժ պահեք հեռախոսը"</string>
-    <string name="align_and_tap_key">"Ուղղել նկարը և սեղմել"</string>
-    <string name="tap_to_capture_back_side_key">"Սեղմել՝ ID քարտի ետևի կողմը նկարելու համար"</string>
+    <string name="position_your_face_in_the_oval">"Տեղավորեք ձեր դեմքը օվալում"</string>
+    <string name="scanned">Սկանավորվել է!</string>
+    <string name="recommendations">"Առաջարկություններ"</string>
+    <string name="light_face_evenly">"Լուսավորեք դեմքը հավասարաչափ"</string>
+    <string name="great">"Հիանալի է!"</string>
+    <string name="no_glasses">"Հանեք ակնոցները"</string>
+    <string name="no_shadow">"Ոչ մի ստվեր"</string>
+    <string name="no_flash">"Ոչ մի լույս"</string>
+    <string name="continue_key">"Շարունակել"</string>
 </resources>

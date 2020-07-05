@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'digital.wup.android-maven-publish'
 group = 'com.github.verifie-global'
@@ -81,5 +82,10 @@ dependencies {
 //    implementation 'com.rmtheis:tess-two:9.1.0'
     implementation 'com.intuit.sdp:sdp-android:1.0.6'
     implementation 'cz.adaptech.android:tesseract4android:2.1.0'
+    implementation "androidx.core:core-ktx:+"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
+}
+repositories {
+    mavenCentral()
 }

@@ -108,6 +108,12 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
 //        croppedImage = view.findViewById(R.id.cropped_image);
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+//        ((DocumentScannerActivity) getActivity()).openIdCardBacksideScanner();
+    }
+
     private Bitmap processImageOrientation() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         rgbFrameBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
@@ -186,15 +192,6 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
                             Bitmap bitmap = getViewFinderArea(bitmapInRightOrientation);
                             if (bitmap != null) {
                                 long res = new ConvolutionMatrix(3).variance(bitmap);
-//                                System.out.println("-=-=-=-=-=-=-=-=-=-= res: " + res);
-//                                if (getActivity() != null) {
-//                                    getActivity().runOnUiThread(() -> {
-//                                        croppedImage.setImageBitmap(bitmap);
-//                                        if (getView() != null) {
-//                                            ((TextView) getView().findViewById(R.id.title)).setText(String.valueOf(res));
-//                                        }
-//                                    });
-//                                }
                                 findFaceOnImage(bitmap, res);
                             }
                             break;
@@ -221,11 +218,11 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
             Frame frame = new Frame.Builder().setBitmap(imageBitmap).build();
             SparseArray<Face> faces = faceDetector.detect(frame);
             if (faces.size() > 0 && faces.get(faces.keyAt(0)).getLandmarks().size() > 11) {
-                stop = true;
                 if (bmp == null) {
                     this.res = res;
                     this.bmp = imageBitmap;
                 } else {
+                    stop = true;
                     if (this.res >= res) {
                         processImageOnRemoteServer(this.bmp);
                     } else {

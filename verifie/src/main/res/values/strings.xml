@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">verifie</string>
-    <string name="permission_camera_rationale">camera permission is needed this app to work</string>
+    <string name="permission_camera_rationale">Camera permission is needed this app to work</string>
     <string name="move_away">"Move the phone away"</string>
     <string name="move_close">"Move the phone closer"</string>
-    <string name="result_formatted">"Reals = %2$d \n Fakes = %2$d "</string>
     <string name="hold_still">Hold still</string>
-    <string name="align_and_tap_key">Align the photo and tap</string>
-    <string name="tap_to_capture_back_side_key">Click to capture ID Card backside</string>
     <string name="recommendations">Recommendations</string>
     <string name="light_face_evenly">Light Face Evenly</string>
     <string name="great">Great!</string>
@@ -15,14 +12,7 @@
     <string name="no_shadow">No Shadow</string>
     <string name="no_flash">No Flash</string>
     <string name="continue_key">Continue</string>
-    <string name="scan_backside_of_doc">Back of card</string>
-    <string name="scan_backside_of_doc_infp">Position the back of your card in the frame</string>
-    <string name="verification_result">Verification Result</string>
     <string name="position_your_face_in_the_oval">Position your face in the oval</string>
-    <string name="scan_document">Scan Document</string>
-    <string name="now_place_your_phone_directly_on_top_of_your_document_so_we_can_connect_securely">Place your phone directly on top of your document as shown in the picture below.</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="scanned">Scanned!</string>
 </resources>

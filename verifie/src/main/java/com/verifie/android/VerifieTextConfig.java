@@ -1,5 +1,6 @@
 package com.verifie.android;
 
+import android.content.res.Resources;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -15,8 +16,34 @@ public class VerifieTextConfig implements Parcelable {
     private String idBacksideInfo;
     private String faceFailed;
     private String eyesFailed;
+    private String holdStillText;
+    private String positionFaceInOval;
+    private String scannedText;
+    private String recommendationsTitleText;
+    private String lightUpFaceText;
+    private String greatText;
+    private String noGlassesText;
+    private String noShadowText;
+    private String noFlashLightText;
+    private String continueText;
+    private String cameraPermissionRational;
+
 
     public VerifieTextConfig() {
+        Resources resources = App.getInstance().getResources();
+        this.movePhoneCloser = resources.getString(R.string.move_close);
+        this.movePhoneAway = resources.getString(R.string.move_away);
+        this.holdStillText = resources.getString(R.string.hold_still);
+        this.positionFaceInOval = resources.getString(R.string.position_your_face_in_the_oval);
+        this.scannedText = resources.getString(R.string.scanned);
+        this.recommendationsTitleText = resources.getString(R.string.recommendations);
+        this.lightUpFaceText = resources.getString(R.string.light_face_evenly);
+        this.greatText = resources.getString(R.string.great);
+        this.noGlassesText = resources.getString(R.string.no_glasses);
+        this.noShadowText = resources.getString(R.string.no_shadow);
+        this.noFlashLightText = resources.getString(R.string.no_flash);
+        this.continueText = resources.getString(R.string.continue_key);
+        this.cameraPermissionRational = resources.getString(R.string.permission_camera_rationale);
     }
 
 
@@ -31,6 +58,17 @@ public class VerifieTextConfig implements Parcelable {
         idBacksideInfo = in.readString();
         faceFailed = in.readString();
         eyesFailed = in.readString();
+        holdStillText = in.readString();
+        positionFaceInOval = in.readString();
+        scannedText = in.readString();
+        recommendationsTitleText = in.readString();
+        lightUpFaceText = in.readString();
+        greatText = in.readString();
+        noGlassesText = in.readString();
+        noShadowText = in.readString();
+        noFlashLightText = in.readString();
+        continueText = in.readString();
+        cameraPermissionRational = in.readString();
     }
 
     @Override
@@ -45,6 +83,17 @@ public class VerifieTextConfig implements Parcelable {
         dest.writeString(idBacksideInfo);
         dest.writeString(faceFailed);
         dest.writeString(eyesFailed);
+        dest.writeString(holdStillText);
+        dest.writeString(positionFaceInOval);
+        dest.writeString(scannedText);
+        dest.writeString(recommendationsTitleText);
+        dest.writeString(lightUpFaceText);
+        dest.writeString(greatText);
+        dest.writeString(noGlassesText);
+        dest.writeString(noShadowText);
+        dest.writeString(noFlashLightText);
+        dest.writeString(continueText);
+        dest.writeString(cameraPermissionRational);
     }
 
     @Override
@@ -170,6 +219,86 @@ public class VerifieTextConfig implements Parcelable {
         return result;
     }
 
+    public String getHoldStillText() {
+        return holdStillText;
+    }
+
+    public void setHoldStillText(String holdStillText) {
+        this.holdStillText = holdStillText;
+    }
+
+    public String getPositionFaceInOval() {
+        return positionFaceInOval;
+    }
+
+    public void setPositionFaceInOval(String positionFaceInOval) {
+        this.positionFaceInOval = positionFaceInOval;
+    }
+
+    public String getScannedText() {
+        return scannedText;
+    }
+
+    public void setScannedText(String scannedText) {
+        this.scannedText = scannedText;
+    }
+
+    public String getRecommendationsTitleText() {
+        return recommendationsTitleText;
+    }
+
+    public void setRecommendationsTitleText(String recommendationsTitleText) {
+        this.recommendationsTitleText = recommendationsTitleText;
+    }
+
+    public String getLightUpFaceText() {
+        return lightUpFaceText;
+    }
+
+    public void setLightUpFaceText(String lightUpFaceText) {
+        this.lightUpFaceText = lightUpFaceText;
+    }
+
+    public String getGreatText() {
+        return greatText;
+    }
+
+    public void setGreatText(String greatText) {
+        this.greatText = greatText;
+    }
+
+    public String getNoGlassesText() {
+        return noGlassesText;
+    }
+
+    public void setNoGlassesText(String noGlassesText) {
+        this.noGlassesText = noGlassesText;
+    }
+
+    public String getNoShadowText() {
+        return noShadowText;
+    }
+
+    public void setNoShadowText(String noShadowText) {
+        this.noShadowText = noShadowText;
+    }
+
+    public String getNoFlashLightText() {
+        return noFlashLightText;
+    }
+
+    public void setNoFlashLightText(String noFlashLightText) {
+        this.noFlashLightText = noFlashLightText;
+    }
+
+    public String getContinueText() {
+        return continueText;
+    }
+
+    public void setContinueText(String continueText) {
+        this.continueText = continueText;
+    }
+
     @Override
     public String toString() {
         return "VerifieTextConfig{" +
@@ -177,17 +306,27 @@ public class VerifieTextConfig implements Parcelable {
                 ", movePhoneAway='" + movePhoneAway + '\'' +
                 ", blinkEyes='" + blinkEyes + '\'' +
                 ", pageTitle='" + pageTitle + '\'' +
+                ", pageInfo='" + pageInfo + '\'' +
+                ", scanInfo='" + scanInfo + '\'' +
                 ", idBackside='" + idBackside + '\'' +
+                ", idBacksideInfo='" + idBacksideInfo + '\'' +
                 ", faceFailed='" + faceFailed + '\'' +
                 ", eyesFailed='" + eyesFailed + '\'' +
+                ", holdStillText='" + holdStillText + '\'' +
+                ", positionFaceInOval='" + positionFaceInOval + '\'' +
+                ", scannedText='" + scannedText + '\'' +
+                ", recommendationsTitleText='" + recommendationsTitleText + '\'' +
+                ", lightUpFaceText='" + lightUpFaceText + '\'' +
+                ", greatText='" + greatText + '\'' +
+                ", noGlassesText='" + noGlassesText + '\'' +
+                ", noShadowText='" + noShadowText + '\'' +
+                ", noFlashLightText='" + noFlashLightText + '\'' +
+                ", continueText='" + continueText + '\'' +
                 '}';
     }
 
     public static VerifieTextConfig defaultConfig() {
         VerifieTextConfig config = new VerifieTextConfig();
-
-        config.movePhoneCloser = "Move phone closer";
-        config.movePhoneAway = "Move phone away";
         config.blinkEyes = "Blink eyes";
         config.pageTitle = "Align and Tap";
         config.idBackside = "Backside of ID";
@@ -195,6 +334,14 @@ public class VerifieTextConfig implements Parcelable {
         config.eyesFailed = "Eyes failed!!!";
 
         return config;
+    }
+
+    public String getCameraPermissionRational() {
+        return cameraPermissionRational;
+    }
+
+    public void setCameraPermissionRational(String cameraPermissionRational) {
+        this.cameraPermissionRational = cameraPermissionRational;
     }
 
     public void setIdBacksideInfo(String string) {
