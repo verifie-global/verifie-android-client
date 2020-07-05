@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -61,7 +62,7 @@ import static com.verifie.android.ui.BaseDocumentScannerFragment.ARG_CONFIG;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MrzScanFragment extends Fragment {
+public class MrzScanFragment extends Fragment implements IDCardView.ActionHandler {
 
     private static final String TAG = MrzScanFragment.class.getName();
 
@@ -85,6 +86,9 @@ public class MrzScanFragment extends Fragment {
     private FrameOverlay viewFinder;
     private Size previewSize;
     private Point screenSizes;
+    private IDCardView idCardView;
+    private View viewToAdd;
+    private FrameLayout container;
 
     public MrzScanFragment() {
         // Required empty public constructor
@@ -96,6 +100,10 @@ public class MrzScanFragment extends Fragment {
         super.onCreate(savedInstanceState);
         config = getArguments().getParcelable(ARG_CONFIG);
         operationsManager = OperationsManager.getInstance();
+        idCardView = operationsManager.getIdCardView();
+        if (idCardView != null) {
+            viewToAdd = idCardView.getViewToShow(this);
+        }
     }
 
     @Override
@@ -120,6 +128,7 @@ public class MrzScanFragment extends Fragment {
         camera = view.findViewById(R.id.camera);
         camera.setLifecycleOwner(this);
 
+        container = view.findViewById(R.id.info_layout_container);
 
 //        croppedImage = view.findViewById(R.id.cropped_image);
         viewFinder = view.findViewById(R.id.cropper_frame_holder);
@@ -128,7 +137,10 @@ public class MrzScanFragment extends Fragment {
             public void onCameraOpened(@NonNull CameraOptions options) {
 //                viewFinder = new FrameOverlay(view.getContext());
 //                camera.addView(viewFinder);
-                camera.addFrameProcessor(frameProcessor);
+                if (!isThereInfoLayout()) {
+                    container.setVisibility(View.INVISIBLE);
+                    camera.addFrameProcessor(frameProcessor);
+                }
             }
         });
         initTextHelper();
@@ -152,6 +164,15 @@ public class MrzScanFragment extends Fragment {
             return source;
         });
 
+        if (isThereInfoLayout()) {
+            container.setVisibility(View.VISIBLE);
+            container.addView(viewToAdd);
+        }
+
+    }
+
+    private boolean isThereInfoLayout() {
+        return idCardView != null && viewToAdd != null;
     }
 
     @Override
@@ -277,6 +298,13 @@ public class MrzScanFragment extends Fragment {
                 bitmap.getWidth(), bitmap.getHeight() - top);
 
         return bitmap;
+    }
+
+    @Override
+    public void closeIDCardLayout() {
+        container.setVisibility(View.GONE);
+        container.removeAllViews();
+        camera.addFrameProcessor(frameProcessor);
     }
 
     @SuppressLint("StaticFieldLeak")

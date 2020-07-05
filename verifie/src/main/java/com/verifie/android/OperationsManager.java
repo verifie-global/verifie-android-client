@@ -9,6 +9,7 @@ import com.verifie.android.api.model.res.Document;
 import com.verifie.android.api.model.res.ResponseModel;
 import com.verifie.android.api.model.res.Score;
 import com.verifie.android.ui.DocumentScannerActivity;
+import com.verifie.android.ui.IDCardView;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -84,6 +85,13 @@ public class OperationsManager {
         }
     }
 
+    public IDCardView getIdCardView() {
+        if (callback == null) {
+            return null;
+        }
+        return callback.getIDCardInfoView();
+    }
+
     private void notifyDocumentReceived(Document document) {
         if (callback != null) {
             callback.onDocumentReceived(document);
@@ -122,5 +130,7 @@ public class OperationsManager {
         void onDocumentReceived(Document document);
 
         void onScoreReceived(Score score);
+
+        IDCardView getIDCardInfoView();
     }
 }

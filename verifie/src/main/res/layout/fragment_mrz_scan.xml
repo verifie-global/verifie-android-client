@@ -104,12 +104,20 @@
             tools:text="Position the page with your photo in frame" />
     </LinearLayout>
 
+    <FrameLayout
+        android:id="@+id/info_layout_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:elevation="20dp"
+        android:focusable="true" />
 
-<!--    <ImageView-->
-<!--        android:id="@+id/cropped_image"-->
-<!--        android:layout_width="120dp"-->
-<!--        android:layout_height="150dp"-->
-<!--        android:layout_margin="40dp"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <!--    <ImageView-->
+    <!--        android:id="@+id/cropped_image"-->
+    <!--        android:layout_width="120dp"-->
+    <!--        android:layout_height="150dp"-->
+    <!--        android:layout_margin="40dp"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent" />-->
 </androidx.constraintlayout.widget.ConstraintLayout>

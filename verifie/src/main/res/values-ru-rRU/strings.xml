@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">verifie</string>
-    <string name="permission_camera_rationale">camera permission is needed this app to work</string>
+    <string name="permission_camera_rationale">Разрешение камеры необходимо, чтобы это приложение работало</string>
     <string name="move_away">"Отодвиньте телефон"</string>
     <string name="move_close">"Приблизьте телефон"</string>
-    <string name="result_formatted">"Reals = %2$d \n Fakes = %2$d "</string>
     <string name="hold_still">"Не двигайтесь"</string>
-    <string name="align_and_tap_key">"Выровняйте фотографию и нажмите"</string>
-    <string name="tap_to_capture_back_side_key">"Нажмите, чтобы сфотографировать обратную сторону идентификационной карты"</string>
+    <string name="position_your_face_in_the_oval">"Поместите свое лицо в овал"</string>
+    <string name="scanned">Отсканировано!</string>
+    <string name="recommendations">"Рекомендации"</string>
+    <string name="light_face_evenly">"Осветлите лицо равномерно"</string>
+    <string name="great">"Здорово!"</string>
+    <string name="no_glasses">"Снимите очки"</string>
+    <string name="no_shadow">"Никакой тени"</string>
+    <string name="no_flash">"Без вспышки"</string>
+    <string name="continue_key">"Продолжать"</string>
 </resources>

@@ -63,6 +63,7 @@ public final class DocumentScannerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_document_scanner);
         if (checkPermissions()) {
             openDocumentScanner();
+//            openFaceDetectorActivity();
         } else {
             requestCameraAccess();
         }
@@ -107,12 +108,20 @@ public final class DocumentScannerActivity extends AppCompatActivity {
             args.putParcelable(BaseDocumentScannerFragment.ARG_CONFIG, config);
             fragment.setArguments(args);
 
+
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, fragment)
                     .commit();
         } catch (Exception e) {
             throw new RuntimeException("Failed to instantiate fragment " + config.getDocumentScannerFragment());
         }
+    }
+
+    private void openFaceDetectorActivity() {
+        Intent intent = new Intent(this, FaceDetectorActivity.class);
+        intent.putExtra(DocumentScannerActivity.EXTRA_CONFIG, config);
+        startActivity(intent);
+        finish(false);
     }
 
 

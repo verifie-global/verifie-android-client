@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.verifie.android.api.model.res.Document;
 import com.verifie.android.api.model.res.Score;
+import com.verifie.android.ui.IDCardView;
 
 public class Verifie implements OperationsManager.OperationsManagerCallback {
 
@@ -13,6 +14,7 @@ public class Verifie implements OperationsManager.OperationsManagerCallback {
     private VerifieConfig config;
     private VerifieCallback callback;
     private OperationsManager operationsManager;
+    private IDCardView idCardView;
 
     public Verifie(@NonNull Context context, @NonNull VerifieConfig config, @NonNull VerifieCallback callback) {
         this.context = context;
@@ -20,6 +22,17 @@ public class Verifie implements OperationsManager.OperationsManagerCallback {
         this.callback = callback;
         this.operationsManager = OperationsManager.getInstance();
         this.operationsManager.init(config, this);
+    }
+
+    public void setIdCardView(IDCardView idCardView) {
+        this.idCardView = idCardView;
+    }
+
+    public void setFaceContainingPercentageInOval(float percentage) {
+        if (percentage <= 0) {
+            percentage = 0.2f;
+        }
+        this.config.setFaceContainingPercentageInOval(percentage);
     }
 
     public void start() {
@@ -47,6 +60,11 @@ public class Verifie implements OperationsManager.OperationsManagerCallback {
     @Override
     public void onScoreReceived(Score score) {
         notifyScoreReceived(score);
+    }
+
+    @Override
+    public IDCardView getIDCardInfoView() {
+        return idCardView;
     }
 
     private void notifySessionStarted() {

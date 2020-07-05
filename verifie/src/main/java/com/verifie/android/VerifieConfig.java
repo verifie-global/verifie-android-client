@@ -20,6 +20,7 @@ public class VerifieConfig implements Parcelable {
     private VerifieTextConfig textConfig;
     private VerifieColorConfig colorConfig;
     private DocType docType;
+    private float faceContainingPercentageInOval = 0.2f; //Default Value
 
     private Class<? extends BaseDocumentScannerFragment> documentScannerFragment = DefaultDocumentScannerFragment.class;
     private Class<? extends MrzScanFragment> passportScannerFragment = MrzScanFragment.class;
@@ -46,6 +47,7 @@ public class VerifieConfig implements Parcelable {
         textConfig = in.readParcelable(VerifieTextConfig.class.getClassLoader());
         colorConfig = in.readParcelable(VerifieColorConfig.class.getClassLoader());
         docType = DocType.valueOf(in.readString());
+        faceContainingPercentageInOval = in.readFloat();
     }
 
     @Override
@@ -56,6 +58,7 @@ public class VerifieConfig implements Parcelable {
         dest.writeParcelable(textConfig, flags);
         dest.writeParcelable(colorConfig, flags);
         dest.writeString(docType.name());
+        dest.writeFloat(faceContainingPercentageInOval);
     }
 
     @Override
@@ -121,7 +124,7 @@ public class VerifieConfig implements Parcelable {
     }
 
     public Class<? extends Fragment> getDocumentScannerFragment() {
-        if(docType == DocType.DOC_TYPE_PASSPORT){
+        if (docType == DocType.DOC_TYPE_PASSPORT) {
             return passportScannerFragment;
         }
         return documentScannerFragment;
@@ -145,6 +148,14 @@ public class VerifieConfig implements Parcelable {
 
     public void setDocType(DocType docType) {
         this.docType = docType;
+    }
+
+    public float getFaceContainingPercentageInOval() {
+        return faceContainingPercentageInOval;
+    }
+
+    public void setFaceContainingPercentageInOval(float faceContainingPercentageInOval) {
+        this.faceContainingPercentageInOval = faceContainingPercentageInOval;
     }
 
     @Override
@@ -187,8 +198,7 @@ public class VerifieConfig implements Parcelable {
                 ", textConfig=" + textConfig +
                 ", colorConfig=" + colorConfig +
                 ", docType=" + docType +
+                ", faceContainingPercentageInOval=" + faceContainingPercentageInOval +
                 '}';
     }
-
-
 }

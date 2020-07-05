@@ -25,6 +25,7 @@ import com.verifie.android.VerifieConfig;
 import com.verifie.android.VerifieTextConfig;
 import com.verifie.android.api.model.res.Document;
 import com.verifie.android.api.model.res.Score;
+import com.verifie.android.ui.IDCardView;
 
 
 public class MainActivity extends AppCompatActivity implements VerifieCallback {
@@ -115,8 +116,8 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         VerifieColorConfig colorConfig = new VerifieColorConfig();
         colorConfig.setDocCropperFrameColor(Color.WHITE);
 
-        VerifieConfig config = new VerifieConfig("licenseKey", "personId");
-
+//        VerifieConfig config = new VerifieConfig("licenseKey", "personId");
+        VerifieConfig config = new VerifieConfig("5d3f2e38-fe7c-43c6-b532-db9b57e674f8", "12");
         config.setColorConfig(colorConfig);
         VerifieTextConfig textConfig = new VerifieTextConfig();
         config.setDocType(DocType.DOC_TYPE_PASSPORT);
@@ -145,6 +146,17 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         config.setTextConfig(textConfig);
 
         verifie = new Verifie(this, config, this);
+        verifie.setIdCardView(new IDCardView() {
+            @Override
+            public View getViewToShow(ActionHandler actionHandler) {
+//          Return the view you want to add after ID card first page scanning, use action handler to close the layout and remove the view you have added
+//
+//                someBtnOnYourView.setOnClickListener(v -> actionHandler.closeIDCardLayout());
+//                return yourView;
+                return null;
+            }
+        });
+        verifie.setFaceContainingPercentageInOval(0.5f);
         verifie.start();
     }
 

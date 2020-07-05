@@ -26,6 +26,7 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -46,6 +47,7 @@ import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 import com.verifie.android.OperationsManager;
 import com.verifie.android.R;
+import com.verifie.android.VerifieConfig;
 import com.verifie.android.api.model.res.Score;
 import com.verifie.android.gms.CameraSourcePreview;
 import com.verifie.android.gms.TensorFaceDetector;
@@ -99,6 +101,7 @@ public class FaceDetectorGmsFragment extends Fragment {
     private Model model;
     private View recommendationsLayout;
     private boolean stopped = true;
+    private VerifieConfig verifieConfig;
 
     private boolean areRealsGreather() {
         int total = realCount + fakeCount;
@@ -110,6 +113,14 @@ public class FaceDetectorGmsFragment extends Fragment {
         // Required empty public constructor
     }
 
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (getArguments() != null && getArguments().get(DocumentScannerActivity.EXTRA_CONFIG) != null) {
+            verifieConfig = getArguments().getParcelable(DocumentScannerActivity.EXTRA_CONFIG);
+        }
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -268,11 +279,14 @@ public class FaceDetectorGmsFragment extends Fragment {
 
     private void showRecommendationsLayout() {
         if (getView() != null) {
-            setRecommendationItemData(getView().findViewById(R.id.recommendation_great), getString(R.string.great), R.drawable.ic_boy_great, R.drawable.ic_success);
-            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_glasses), getString(R.string.no_glasses), R.drawable.ic_boy_glasses, R.drawable.ic_error);
-            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_shadow), getString(R.string.no_shadow), R.drawable.ic_boy_shadow, R.drawable.ic_error);
-            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_flash), getString(R.string.no_flash), R.drawable.ic_boy_flash, R.drawable.ic_error);
-            ((TextView) getView().findViewById(R.id.title_recommendation)).setText(getString(R.string.recommendations));
+            setRecommendationItemData(getView().findViewById(R.id.recommendation_great), verifieConfig.getTextConfig().getGreatText(), R.drawable.ic_boy_great, R.drawable.ic_success);
+            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_glasses), verifieConfig.getTextConfig().getNoGlassesText(), R.drawable.ic_boy_glasses, R.drawable.ic_error);
+            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_shadow), verifieConfig.getTextConfig().getNoShadowText(), R.drawable.ic_boy_shadow, R.drawable.ic_error);
+            setRecommendationItemData(getView().findViewById(R.id.recommendation_no_flash), verifieConfig.getTextConfig().getNoFlashLightText(), R.drawable.ic_boy_flash, R.drawable.ic_error);
+            ((TextView) getView().findViewById(R.id.title_recommendation)).setText(verifieConfig.getTextConfig().getRecommendationsTitleText());
+            ((TextView) getView().findViewById(R.id.tv_info)).setText(verifieConfig.getTextConfig().getPositionFaceInOval());
+            ((TextView) getView().findViewById(R.id.txt_light_evenly)).setText(verifieConfig.getTextConfig().getLightUpFaceText());
+            ((Button) getView().findViewById(R.id.btn_continue)).setText(verifieConfig.getTextConfig().getContinueText());
             getView().findViewById(R.id.btn_continue).setOnClickListener(v -> {
                 recommendationsLayout.setVisibility(View.INVISIBLE);
                 stopped = false;
@@ -377,13 +391,13 @@ public class FaceDetectorGmsFragment extends Fragment {
         DialogInterface.OnClickListener listener = (dialog, which) -> ActivityCompat.requestPermissions(thisActivity, permissions,
                 RC_HANDLE_CAMERA_PERM);
         new AlertDialog.Builder(getContext())
-                .setMessage(R.string.permission_camera_rationale)
+                .setMessage(verifieConfig.getTextConfig().getCameraPermissionRational())
                 .setNeutralButton(android.R.string.ok, listener);
     }
 
     private void moveAway() {
         if (!isLoading()) {
-            tvInfo.setText(getString(R.string.move_away));
+            tvInfo.setText(verifieConfig.getTextConfig().getMovePhoneAway());
             oval_overlay_animation.stopAnim();
             isAnimationStarted = false;
         }
@@ -392,21 +406,19 @@ public class FaceDetectorGmsFragment extends Fragment {
 
     private void moveClose() {
         if (!isLoading()) {
-            tvInfo.setText(getString(R.string.move_close));
+            tvInfo.setText(verifieConfig.getTextConfig().getMovePhoneCloser());
             oval_overlay_animation.stopAnim();
             isAnimationStarted = false;
         }
     }
-
 
     private void positionFaceInOval() {
         if (!isLoading()) {
-            tvInfo.setText(getString(R.string.position_your_face_in_the_oval));
+            tvInfo.setText(verifieConfig.getTextConfig().getPositionFaceInOval());
             oval_overlay_animation.stopAnim();
             isAnimationStarted = false;
         }
     }
-
 
     private void onFaceScanError(String s, final boolean moveToPreviousPage) {
         if (!isLoading()) {
@@ -436,89 +448,15 @@ public class FaceDetectorGmsFragment extends Fragment {
         startTime = -1;
     }
 
-    private class GraphicFaceTracker extends Tracker<Face> {
-        Handler mainHandler = new Handler(Looper.getMainLooper());
-
-        @Override
-        public void onNewItem(int faceId, Face face) {
+    boolean rectFContainsAtLeastTwentyPercent(RectF rectFFirst, RectF rectF) {
+        // check for empty first
+        if (rectFFirst.left >= rectFFirst.right || rectFFirst.top >= rectFFirst.bottom) {
+            return false;
         }
 
-        @Override
-        public void onUpdate(FaceDetector.Detections<Face> detectionResults, Face face) {
-            if (stopped) return;
-            if (FaceSolidityMin == INVALID) {
-                FaceSolidityMin = mPreview.getWidth() * FaceSolidityMinPercentage / 100;
-            }
-            if (FaceSolidityMax == INVALID) {
-                FaceSolidityMax = mPreview.getWidth() * FaceSolidityMaxPercentage / 100;
-            }
-            float fullArea = mPreview.getWidth() * mPreview.getHeight();
-            float faceWidth = face.getWidth();
-            float faceHeight = face.getHeight();
-            PointF pointF = face.getPosition();
-            float faceArea = faceWidth * faceHeight;
-            float solidity = faceArea / fullArea;
-            RectF faceRectF = new RectF(pointF.x, pointF.y, pointF.x + faceWidth, pointF.y + faceHeight);
-            if (oval_overlay_animation.getVisibleBounds().contains(faceRectF)) {
-                if (solidity > FaceSolidityMin) {
-                    if (solidity < FaceSolidityMax) {
-                        mainHandler.post(() -> {
-                            tvInfo.setText(R.string.hold_still);
-                            if (!isLoading() && !isAnimationStarted && !oval_overlay_animation.isRunningAnimation()) {
-                                isAnimationStarted = true;
-                                oval_overlay_animation.startAnimation(5);
-                            }
-                        });
-                        faceDetected = true;
-                    } else {
-                        faceDetected = false;
-                        mainHandler.post(FaceDetectorGmsFragment.this::moveAway);
-                        if (seconds < SECONDS_TO_HOLD) {
-                            mainHandler.post(FaceDetectorGmsFragment.this::resetData);
-                        }
-                    }
-                } else {
-                    faceDetected = false;
-                    mainHandler.post(FaceDetectorGmsFragment.this::moveClose);
-                    if (seconds < SECONDS_TO_HOLD) {
-                        mainHandler.post(FaceDetectorGmsFragment.this::resetData);
-                    }
-                }
-            } else {
-                faceDetected = false;
-                mainHandler.post(FaceDetectorGmsFragment.this::positionFaceInOval);
-                if (seconds < SECONDS_TO_HOLD) {
-                    mainHandler.post(FaceDetectorGmsFragment.this::resetData);
-                }
-            }
-        }
-
-        @Override
-        public void onMissing(FaceDetector.Detections<Face> detectionResults) {
-            if (stopped) return;
-            faceDetected = false;
-            isAnimationStarted = false;
-            mainHandler.post(() -> {
-                tvInfo.setText("");
-                if (!isLoading()) {
-                    oval_overlay_animation.stopAnim();
-                }
-                resetData();
-            });
-        }
-
-        @Override
-        public void onDone() {
-            mainHandler.post(() -> {
-                tvInfo.setText("");
-                if (!isLoading()) {
-                    oval_overlay_animation.stopAnim();
-                }
-                resetData();
-            });
-            isAnimationStarted = false;
-            faceDetected = false;
-        }
+        float intersectionArea = Math.max(0f, Math.min(rectFFirst.right, rectF.right) - Math.max(rectFFirst.left, rectF.left)) * Math.min(rectFFirst.bottom, rectF.bottom) - Math.max(0f, Math.max(rectFFirst.top, rectF.top));
+        float unionArea = rectFFirst.width() * rectFFirst.height() + rectF.width() * rectF.height() - intersectionArea;
+        return intersectionArea / unionArea >= 0.5f;
     }
 
     private class MyFaceDetector extends Detector<Face> {
@@ -648,5 +586,98 @@ public class FaceDetectorGmsFragment extends Fragment {
         RectF ovalRect;
     }
 
+    private class GraphicFaceTracker extends Tracker<Face> {
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+
+        @Override
+        public void onNewItem(int faceId, Face face) {
+        }
+
+        @Override
+        public void onUpdate(FaceDetector.Detections<Face> detectionResults, Face face) {
+            if (stopped) return;
+            if (FaceSolidityMin == INVALID) {
+                FaceSolidityMin = mPreview.getWidth() * FaceSolidityMinPercentage / 100;
+            }
+            if (FaceSolidityMax == INVALID) {
+                FaceSolidityMax = mPreview.getWidth() * FaceSolidityMaxPercentage / 100;
+            }
+            float fullArea = mPreview.getWidth() * mPreview.getHeight();
+            float faceWidth = face.getWidth();
+            float faceHeight = face.getHeight();
+            PointF pointF = face.getPosition();
+            float faceArea = faceWidth * faceHeight;
+            float solidity = faceArea / fullArea;
+            RectF faceRectF = new RectF(pointF.x, pointF.y, pointF.x + faceWidth, pointF.y + faceHeight);
+            System.out.println("oval size: " + oval_overlay_animation.getWidth() + "x" + oval_overlay_animation.getHeight());
+            System.out.println("preview size: " + mPreview.getWidth() + "x" + mPreview.getHeight());
+//            mainHandler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    setText("Oval out rect: " + oval_overlay_animation.getVisibleBounds() + ",\nFace out rect: " + faceRectF +
+//                            ",\npreview: " + mPreview.getWidth() + "x" + mPreview.getHeight() +",\nblackView"+ oval_overlay_animation.getWidth() + "x" + oval_overlay_animation.getHeight());
+//                }
+//            });
+            if (rectFContainsAtLeastTwentyPercent(oval_overlay_animation.getVisibleBounds(), faceRectF)) {
+                if (solidity > FaceSolidityMin) {
+                    if (solidity < FaceSolidityMax) {
+                        mainHandler.post(() -> {
+                            tvInfo.setText(verifieConfig.getTextConfig().getHoldStillText());
+                            if (!isLoading() && !isAnimationStarted && !oval_overlay_animation.isRunningAnimation()) {
+                                isAnimationStarted = true;
+                                oval_overlay_animation.startAnimation(5);
+                            }
+                        });
+                        faceDetected = true;
+                    } else {
+                        faceDetected = false;
+                        mainHandler.post(FaceDetectorGmsFragment.this::moveAway);
+                        if (seconds < SECONDS_TO_HOLD) {
+                            mainHandler.post(FaceDetectorGmsFragment.this::resetData);
+                        }
+                    }
+                } else {
+                    faceDetected = false;
+                    mainHandler.post(FaceDetectorGmsFragment.this::moveClose);
+                    if (seconds < SECONDS_TO_HOLD) {
+                        mainHandler.post(FaceDetectorGmsFragment.this::resetData);
+                    }
+                }
+            } else {
+                faceDetected = false;
+                mainHandler.post(FaceDetectorGmsFragment.this::positionFaceInOval);
+                if (seconds < SECONDS_TO_HOLD) {
+                    mainHandler.post(FaceDetectorGmsFragment.this::resetData);
+                }
+            }
+        }
+
+        @Override
+        public void onMissing(FaceDetector.Detections<Face> detectionResults) {
+            if (stopped) return;
+            faceDetected = false;
+            isAnimationStarted = false;
+            mainHandler.post(() -> {
+                tvInfo.setText("");
+                if (!isLoading()) {
+                    oval_overlay_animation.stopAnim();
+                }
+                resetData();
+            });
+        }
+
+        @Override
+        public void onDone() {
+            mainHandler.post(() -> {
+                tvInfo.setText("");
+                if (!isLoading()) {
+                    oval_overlay_animation.stopAnim();
+                }
+                resetData();
+            });
+            isAnimationStarted = false;
+            faceDetected = false;
+        }
+    }
 
 }

@@ -23,12 +23,15 @@ public class FaceDetectorActivity extends AppCompatActivity {
         if (intent != null && intent.hasExtra(DocumentScannerActivity.EXTRA_CONFIG)) {
             VerifieConfig config = intent.getParcelableExtra(DocumentScannerActivity.EXTRA_CONFIG);
             changeLanguage(config.getLanguageCode());
+            setContentView(R.layout.activity_face_detector);
+            faceDetectorGmsFragment = new FaceDetectorGmsFragment();
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(DocumentScannerActivity.EXTRA_CONFIG, config);
+            faceDetectorGmsFragment.setArguments(bundle);
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, faceDetectorGmsFragment)
+                    .commit();
         }
-        setContentView(R.layout.activity_face_detector);
-        faceDetectorGmsFragment = new FaceDetectorGmsFragment();
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.container, faceDetectorGmsFragment)
-                .commit();
     }
 
     @Override
