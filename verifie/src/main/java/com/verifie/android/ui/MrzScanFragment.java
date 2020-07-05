@@ -101,7 +101,7 @@ public class MrzScanFragment extends Fragment implements IDCardView.ActionHandle
         config = getArguments().getParcelable(ARG_CONFIG);
         operationsManager = OperationsManager.getInstance();
         idCardView = operationsManager.getIdCardView();
-        if (idCardView != null) {
+        if (isScanningIDCard() && idCardView != null) {
             viewToAdd = idCardView.getViewToShow(this);
         }
     }
@@ -172,13 +172,17 @@ public class MrzScanFragment extends Fragment implements IDCardView.ActionHandle
     }
 
     private boolean isThereInfoLayout() {
-        return idCardView != null && viewToAdd != null;
+        return isScanningIDCard() && idCardView != null && viewToAdd != null;
+    }
+
+    private boolean isScanningIDCard() {
+        return config.getDocType() == DocType.DOC_TYPE_ID_CARD;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (config.getDocType() == DocType.DOC_TYPE_PASSPORT) {
+        if (!isScanningIDCard()) {
             viewFinder.setCoeficent(1.42f);
         }
     }
@@ -194,7 +198,7 @@ public class MrzScanFragment extends Fragment implements IDCardView.ActionHandle
         txtTitle.setTextColor(colorConfig.getDocCropperFrameColor());
         txtTitle.setText(textConfig.getPageTitle());
 
-        if (config.getDocType() == DocType.DOC_TYPE_ID_CARD) {
+        if (isScanningIDCard()) {
             txtPageInfo.setText(textConfig.getIdBackside());
             txtScanInfo.setText(textConfig.getIdBacksideInfo());
         } else {
@@ -266,7 +270,7 @@ public class MrzScanFragment extends Fragment implements IDCardView.ActionHandle
         }
 
         float coeffiecent = 1.54f;
-        if (config.getDocType() == DocType.DOC_TYPE_PASSPORT) {
+        if (!isScanningIDCard()) {
             coeffiecent = 1.42f;
         }
 
@@ -442,7 +446,7 @@ public class MrzScanFragment extends Fragment implements IDCardView.ActionHandle
     }
 
     private boolean isConfigIdCardAndScannedTD(MrzFormat format) {
-        return config.getDocType() == DocType.DOC_TYPE_ID_CARD && format == MrzFormat.PASSPORT;
+        return isScanningIDCard() && format == MrzFormat.PASSPORT;
     }
 
     private boolean isScannedPassportAndConfigIsPassport(MrzFormat format) {
