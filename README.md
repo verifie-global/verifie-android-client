@@ -23,7 +23,7 @@ allprojects {
 **Step 2.** Add the dependency
 
 ```gradle
-implementation 'com.github.verifie-global:verifie-android-client:v2.0.2'
+implementation 'com.github.verifie-global:verifie-android-client:v2.1.0'
 ```
 
 # Usage
@@ -57,6 +57,21 @@ Verifie verifie = new Verifie(this, config, new VerifieCallback() {
 	    // Facial score received
     }
 });
+
+        verifie.setIdCardView(new IDCardView() {
+            @Override
+            public View getViewToShow(ActionHandler actionHandler) {
+            Return the view you want to add after ID card first page scanning, use action handler to close the layout and remove the view you have added
+                someBtnOnYourView.setOnClickListener(v -> actionHandler.closeIDCardLayout());
+                return yourView;
+                return null;
+            }
+        });
+        verifie.setFaceContainingPercentageInOval(0.5f);
+```
+ Added new features, now you can set how many percent the face should be in the oval to allow the face scanner work, alse you can add a view between ID Card First page and Second Page scaning
+```
+
 verifie.start();
 ```
 
