@@ -456,7 +456,7 @@ public class FaceDetectorGmsFragment extends Fragment {
 
         float intersectionArea = Math.max(0f, Math.min(rectFFirst.right, rectF.right) - Math.max(rectFFirst.left, rectF.left)) * Math.min(rectFFirst.bottom, rectF.bottom) - Math.max(0f, Math.max(rectFFirst.top, rectF.top));
         float unionArea = rectFFirst.width() * rectFFirst.height() + rectF.width() * rectF.height() - intersectionArea;
-        return intersectionArea / unionArea >= 0.5f;
+        return intersectionArea / unionArea >= verifieConfig.getFaceContainingPercentageInOval();
     }
 
     private class MyFaceDetector extends Detector<Face> {
