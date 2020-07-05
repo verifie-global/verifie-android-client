@@ -169,35 +169,50 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
             readyForNextImage();
             return;
         }
-        if (stop) {
+
+
+        if (!rgbFrameBitmap.isRecycled()) {
+            rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
+            bitmapInRightOrientation = processImageOrientation();
+            final Canvas canvas = new Canvas(croppedBitmap);
+            canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
+        }
+        if (bmp != null && stop && !bitmapInRightOrientation.isRecycled()) {
+            Bitmap bitmap = getViewFinderArea(bitmapInRightOrientation);
 //            croppedImage.setVisibility(View.GONE);
+            long res = new ConvolutionMatrix(3).variance(bitmap);
+            findFaceOnImage(bitmap, res);
             return;
         }
-        rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
-        bitmapInRightOrientation = processImageOrientation();
-        final Canvas canvas = new Canvas(croppedBitmap);
-        canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
-        runInBackground(
-                () -> {
-                    if (stop) {
-                        return;
-                    }
-                    final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
-
-                    for (final Classifier.Recognition result : results) {
-                        final RectF location = result.getLocation();
-                        if (location != null && result.getConfidence() >= MINIMUM_CONFIDENCE_TF_OD_API) {
-                            cropToFrameTransform.mapRect(location);
-                            result.setLocation(location);
-                            Bitmap bitmap = getViewFinderArea(bitmapInRightOrientation);
-                            if (bitmap != null) {
-                                long res = new ConvolutionMatrix(3).variance(bitmap);
-                                findFaceOnImage(bitmap, res);
-                            }
-                            break;
+        if (!stop) {
+            runInBackground(
+                    () -> {
+                        if (stop) {
+                            return;
                         }
-                    }
-                });
+                        final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
+
+                        for (final Classifier.Recognition result : results) {
+                            final RectF location = result.getLocation();
+                            if (location != null && result.getConfidence() >= MINIMUM_CONFIDENCE_TF_OD_API) {
+                                cropToFrameTransform.mapRect(location);
+                                result.setLocation(location);
+                                Bitmap bitmap = getViewFinderArea(bitmapInRightOrientation);
+                                if (bitmap != null) {
+                                    long res = new ConvolutionMatrix(3).variance(bitmap);
+                                    findFaceOnImage(bitmap, res);
+                                }
+                                break;
+                            }
+                        }
+                    });
+        }
+    }
+
+    private void recycleBitmap(Bitmap bitmap) {
+        if (bitmap != null && !bitmap.isRecycled()) {
+            bitmap.recycle();
+        }
     }
 
 
@@ -219,15 +234,20 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
             SparseArray<Face> faces = faceDetector.detect(frame);
             if (faces.size() > 0 && faces.get(faces.keyAt(0)).getLandmarks().size() > 11) {
                 if (bmp == null) {
+                    stop = true;
                     this.res = res;
                     this.bmp = imageBitmap;
                 } else {
-                    stop = true;
                     if (this.res >= res) {
                         processImageOnRemoteServer(this.bmp);
                     } else {
                         processImageOnRemoteServer(imageBitmap);
                     }
+                    recycleBitmap(bmp);
+                    recycleBitmap(bitmapInRightOrientation);
+                    recycleBitmap(rgbFrameBitmap);
+                    recycleBitmap(croppedBitmap);
+                    recycleBitmap(imageBitmap);
                     if (getActivity() != null) {
                         getActivity().runOnUiThread(() -> {
                             VibrationHelper.vibrate(getActivity());
@@ -288,6 +308,7 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
         if (faceDetector != null) {
             faceDetector.release();
         }
+        detector.close();
     }
 
     @Override

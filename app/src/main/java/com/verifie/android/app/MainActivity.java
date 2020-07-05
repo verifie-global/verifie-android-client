@@ -161,12 +161,20 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     }
 
     private void showLoading() {
-        progressDialog = ProgressDialog.show(this, null, "Loading...", true, false);
+        try {
+            progressDialog = ProgressDialog.show(this, null, "Loading...", true, false);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 
     private void hideLoading() {
-        if (progressDialog != null) {
-            progressDialog.dismiss();
+        try {
+            if (progressDialog != null) {
+                progressDialog.dismiss();
+            }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
     }
 
