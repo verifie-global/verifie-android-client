@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
                 return null;
             }
         });
-        verifie.setFaceContainingPercentageInOval(0.2f);
+        verifie.setFaceContainingPercentageInOval(0.6f);
         verifie.start();
     }
 

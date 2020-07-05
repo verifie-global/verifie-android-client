@@ -658,7 +658,7 @@ public class FaceDetectorGmsFragment extends Fragment {
             faceDetected = false;
             isAnimationStarted = false;
             mainHandler.post(() -> {
-                tvInfo.setText("");
+                tvInfo.setText(verifieConfig.getTextConfig().getPositionFaceInOval());
                 if (!isLoading()) {
                     oval_overlay_animation.stopAnim();
                 }
@@ -669,7 +669,7 @@ public class FaceDetectorGmsFragment extends Fragment {
         @Override
         public void onDone() {
             mainHandler.post(() -> {
-                tvInfo.setText("");
+                tvInfo.setText(verifieConfig.getTextConfig().getPositionFaceInOval());
                 if (!isLoading()) {
                     oval_overlay_animation.stopAnim();
                 }

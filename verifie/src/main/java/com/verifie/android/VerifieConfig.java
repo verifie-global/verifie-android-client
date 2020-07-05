@@ -21,7 +21,7 @@ public class VerifieConfig implements Parcelable {
     private VerifieTextConfig textConfig;
     private VerifieColorConfig colorConfig;
     private DocType docType;
-    private float faceContainingPercentageInOval = 0.2f; //Default Value
+    private float faceContainingPercentageInOval = 0.6f; //Default Value
 
     private Class<? extends BaseDocumentScannerFragment> documentScannerFragment = DefaultDocumentScannerFragment.class;
     private Class<? extends MrzScanFragment> passportScannerFragment = MrzScanFragment.class;
