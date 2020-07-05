@@ -1,5 +1,6 @@
 package com.verifie.android;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -29,8 +30,8 @@ public class VerifieTextConfig implements Parcelable {
     private String cameraPermissionRational;
 
 
-    public VerifieTextConfig() {
-        Resources resources = App.getInstance().getResources();
+    public VerifieTextConfig(Context context) {
+        Resources resources = context.getResources();
         this.movePhoneCloser = resources.getString(R.string.move_close);
         this.movePhoneAway = resources.getString(R.string.move_away);
         this.holdStillText = resources.getString(R.string.hold_still);
@@ -325,8 +326,8 @@ public class VerifieTextConfig implements Parcelable {
                 '}';
     }
 
-    public static VerifieTextConfig defaultConfig() {
-        VerifieTextConfig config = new VerifieTextConfig();
+    public static VerifieTextConfig defaultConfig(Context context) {
+        VerifieTextConfig config = new VerifieTextConfig(context);
         config.blinkEyes = "Blink eyes";
         config.pageTitle = "Align and Tap";
         config.idBackside = "Backside of ID";

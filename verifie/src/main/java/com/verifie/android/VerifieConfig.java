@@ -1,5 +1,6 @@
 package com.verifie.android;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -26,17 +27,17 @@ public class VerifieConfig implements Parcelable {
     private Class<? extends MrzScanFragment> passportScannerFragment = MrzScanFragment.class;
     private Class<? extends FaceDetectorGmsFragment> faceDetectorFragment = FaceDetectorGmsFragment.class;
 
-    public VerifieConfig(String licenseKey, String personId, DocType docType) {
+    public VerifieConfig(Context context, String licenseKey, String personId, DocType docType) {
         this.licenseKey = licenseKey;
         this.personId = personId;
         this.languageCode = DEFAULT_LANGUAGE_CODE;
-        this.textConfig = VerifieTextConfig.defaultConfig();
+        this.textConfig = VerifieTextConfig.defaultConfig(context);
         this.colorConfig = VerifieColorConfig.defaultConfig();
         this.docType = docType;
     }
 
-    public VerifieConfig(String licenseKey, String personId) {
-        this(licenseKey, personId, DocType.DOC_TYPE_ID_CARD);
+    public VerifieConfig(Context context, String licenseKey, String personId) {
+        this(context, licenseKey, personId, DocType.DOC_TYPE_ID_CARD);
     }
 
 

@@ -116,10 +116,10 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         VerifieColorConfig colorConfig = new VerifieColorConfig();
         colorConfig.setDocCropperFrameColor(Color.WHITE);
 
-        VerifieConfig config = new VerifieConfig("licenseKey", "personId");
+        VerifieConfig config = new VerifieConfig(this, "licenseKey", "personId");
 
         config.setColorConfig(colorConfig);
-        VerifieTextConfig textConfig = new VerifieTextConfig();
+        VerifieTextConfig textConfig = new VerifieTextConfig(this);
         config.setDocType(DocType.DOC_TYPE_PASSPORT);
         String text = getString(R.string.passport);
         String pageInfo = getString(R.string.page_info_passport);
