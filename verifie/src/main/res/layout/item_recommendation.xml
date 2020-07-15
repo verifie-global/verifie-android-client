@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/_50sdp"
     android:layout_marginTop="@dimen/_20sdp"
-    android:paddingLeft="@dimen/_30sdp"
-    android:paddingRight="@dimen/_30sdp"
+    android:paddingHorizontal="@dimen/_17sdp"
     tools:background="#000000">
 
     <ImageView
@@ -23,7 +22,8 @@
         android:layout_height="wrap_content"
         android:text="@string/great"
         android:textColor="#ffffff"
-        android:textSize="20sp"
+        android:textSize="14sp"
+        tools:text="@string/light_face_evenly"
         app:layout_constraintBottom_toBottomOf="@+id/person_icon"
         app:layout_constraintEnd_toStartOf="@+id/icon_recommendation"
         app:layout_constraintStart_toEndOf="@+id/person_icon"

@@ -7,27 +7,40 @@ import android.os.Parcelable;
 
 public class VerifieTextConfig implements Parcelable {
 
-    private String movePhoneCloser;
-    private String movePhoneAway;
-    private String blinkEyes;
+    //Current page title - Passport, ID Card
     private String pageTitle;
+
+    //Page Info - Id card face page or Passport Face Page - (Bold text under the rectangle)
     private String pageInfo;
+
+    //Scan instruction - Place your id card in the rectangle
     private String scanInfo;
+
+
+    // Id card backside page info - Backside of ID - (Bold text under the rectangle)
     private String idBackside;
+
+    //Scan instruction - Place your id card in the rectangle
     private String idBacksideInfo;
-    private String faceFailed;
-    private String eyesFailed;
-    private String holdStillText;
-    private String positionFaceInOval;
-    private String scannedText;
-    private String recommendationsTitleText;
-    private String lightUpFaceText;
-    private String greatText;
-    private String noGlassesText;
-    private String noShadowText;
-    private String noFlashLightText;
-    private String continueText;
-    private String cameraPermissionRational;
+
+    //Face scaning
+    private String movePhoneCloser; // When user face is too far
+    private String movePhoneAway; // When user face is too close
+    private String holdStillText; // When user should freeze head until scan will be completed
+    private String positionFaceInOval; //When user face is out of the oval borders-
+    private String scannedText; //When scan is completed
+
+    //Recommendations layout (face scan recommendations)
+    private String recommendationsTitleText; //Page title - Recommendations
+    private String lightUpFaceText; //Bold text - Info - Light up face evenly
+    private String greatText; // First Item - Everything is ok
+    private String noGlassesText; // Second Item - Should not wear glasses
+    private String noShadowText; // Third Item - Try to keep your face in front of light power(To suffer shadows)
+    private String noFlashLightText; // Forth Item - Try not to use flash light at back, left or right side
+    private String continueText; // Continue - skips recommendations layout
+
+    private String cameraPermissionRational; // When user denies camera permission for the first time,
+    // Second time when requesting a camera permission show this test to describe it is necessary
 
 
     public VerifieTextConfig(Context context) {
@@ -51,14 +64,11 @@ public class VerifieTextConfig implements Parcelable {
     protected VerifieTextConfig(Parcel in) {
         movePhoneCloser = in.readString();
         movePhoneAway = in.readString();
-        blinkEyes = in.readString();
         pageTitle = in.readString();
         pageInfo = in.readString();
         scanInfo = in.readString();
         idBackside = in.readString();
         idBacksideInfo = in.readString();
-        faceFailed = in.readString();
-        eyesFailed = in.readString();
         holdStillText = in.readString();
         positionFaceInOval = in.readString();
         scannedText = in.readString();
@@ -76,14 +86,11 @@ public class VerifieTextConfig implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(movePhoneCloser);
         dest.writeString(movePhoneAway);
-        dest.writeString(blinkEyes);
         dest.writeString(pageTitle);
         dest.writeString(pageInfo);
         dest.writeString(scanInfo);
         dest.writeString(idBackside);
         dest.writeString(idBacksideInfo);
-        dest.writeString(faceFailed);
-        dest.writeString(eyesFailed);
         dest.writeString(holdStillText);
         dest.writeString(positionFaceInOval);
         dest.writeString(scannedText);
@@ -146,13 +153,6 @@ public class VerifieTextConfig implements Parcelable {
         this.movePhoneAway = movePhoneAway;
     }
 
-    public String getBlinkEyes() {
-        return blinkEyes;
-    }
-
-    public void setBlinkEyes(String blinkEyes) {
-        this.blinkEyes = blinkEyes;
-    }
 
     public String getPageTitle() {
         return pageTitle;
@@ -170,22 +170,6 @@ public class VerifieTextConfig implements Parcelable {
         this.idBackside = idBackside;
     }
 
-    public String getFaceFailed() {
-        return faceFailed;
-    }
-
-    public void setFaceFailed(String faceFailed) {
-        this.faceFailed = faceFailed;
-    }
-
-    public String getEyesFailed() {
-        return eyesFailed;
-    }
-
-    public void setEyesFailed(String eyesFailed) {
-        this.eyesFailed = eyesFailed;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -197,26 +181,17 @@ public class VerifieTextConfig implements Parcelable {
             return false;
         if (movePhoneAway != null ? !movePhoneAway.equals(that.movePhoneAway) : that.movePhoneAway != null)
             return false;
-        if (blinkEyes != null ? !blinkEyes.equals(that.blinkEyes) : that.blinkEyes != null)
-            return false;
         if (pageTitle != null ? !pageTitle.equals(that.pageTitle) : that.pageTitle != null)
             return false;
-        if (idBackside != null ? !idBackside.equals(that.idBackside) : that.idBackside != null)
-            return false;
-        if (faceFailed != null ? !faceFailed.equals(that.faceFailed) : that.faceFailed != null)
-            return false;
-        return eyesFailed != null ? eyesFailed.equals(that.eyesFailed) : that.eyesFailed == null;
+        return idBackside != null ? !idBackside.equals(that.idBackside) : that.idBackside != null;
     }
 
     @Override
     public int hashCode() {
         int result = movePhoneCloser != null ? movePhoneCloser.hashCode() : 0;
         result = 31 * result + (movePhoneAway != null ? movePhoneAway.hashCode() : 0);
-        result = 31 * result + (blinkEyes != null ? blinkEyes.hashCode() : 0);
         result = 31 * result + (pageTitle != null ? pageTitle.hashCode() : 0);
         result = 31 * result + (idBackside != null ? idBackside.hashCode() : 0);
-        result = 31 * result + (faceFailed != null ? faceFailed.hashCode() : 0);
-        result = 31 * result + (eyesFailed != null ? eyesFailed.hashCode() : 0);
         return result;
     }
 
@@ -305,14 +280,11 @@ public class VerifieTextConfig implements Parcelable {
         return "VerifieTextConfig{" +
                 "movePhoneCloser='" + movePhoneCloser + '\'' +
                 ", movePhoneAway='" + movePhoneAway + '\'' +
-                ", blinkEyes='" + blinkEyes + '\'' +
                 ", pageTitle='" + pageTitle + '\'' +
                 ", pageInfo='" + pageInfo + '\'' +
                 ", scanInfo='" + scanInfo + '\'' +
                 ", idBackside='" + idBackside + '\'' +
                 ", idBacksideInfo='" + idBacksideInfo + '\'' +
-                ", faceFailed='" + faceFailed + '\'' +
-                ", eyesFailed='" + eyesFailed + '\'' +
                 ", holdStillText='" + holdStillText + '\'' +
                 ", positionFaceInOval='" + positionFaceInOval + '\'' +
                 ", scannedText='" + scannedText + '\'' +
@@ -328,11 +300,8 @@ public class VerifieTextConfig implements Parcelable {
 
     public static VerifieTextConfig defaultConfig(Context context) {
         VerifieTextConfig config = new VerifieTextConfig(context);
-        config.blinkEyes = "Blink eyes";
         config.pageTitle = "Align and Tap";
         config.idBackside = "Backside of ID";
-        config.faceFailed = "Face failed!!!";
-        config.eyesFailed = "Eyes failed!!!";
 
         return config;
     }
