@@ -19,6 +19,9 @@ public class Score {
     @SerializedName("isMatched")
     private boolean isMatched;
 
+    @SerializedName("livenessScore")
+    private float livenessScore;
+
     private String base64Image;
 
     public float getFacialScore() {
@@ -67,6 +70,14 @@ public class Score {
 
     public void setMatched(boolean matched) {
         isMatched = matched;
+    }
+
+    public float getLivenessScore() {
+        return livenessScore;
+    }
+
+    public void setLivenessScore(float livenessScore) {
+        this.livenessScore = livenessScore;
     }
 
     @Override
