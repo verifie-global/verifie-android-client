@@ -89,6 +89,7 @@ public class MrzScanFragment extends Fragment implements IDCardView.ActionHandle
     private IDCardView idCardView;
     private View viewToAdd;
     private FrameLayout container;
+    private String documentImageStr = "";
 
     public MrzScanFragment() {
         // Required empty public constructor
@@ -358,6 +359,7 @@ public class MrzScanFragment extends Fragment implements IDCardView.ActionHandle
             }
             document.setError("Invalid Document Type");
         }
+        document.setDocumentImage(this.documentImageStr);
         operationsManager.onDocumentReceived(document);
     }
 
@@ -421,6 +423,7 @@ public class MrzScanFragment extends Fragment implements IDCardView.ActionHandle
         }
 //        croppedImage.setImageBitmap(imageBitmap);
         String base64Image = ImageUtils.getImageBase64(imageBitmap);
+        this.documentImageStr = base64Image;
 
         isSentRequest = true;
         camera.removeFrameProcessor(frameProcessor);
