@@ -62,6 +62,7 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
     private boolean isProcessingFrame = false;
     private Handler mainHandler = new Handler();
     private Point screenSizes;
+    private String documentImageStr = "";
 
 
     @Override
@@ -219,6 +220,7 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
         onDocumentScanStarted();
 
         String base64Image = ImageUtils.getImageBase64(imageBitmap);
+        this.documentImageStr = base64Image;
 
         operationsManager.uploadDocument(base64Image)
                 .subscribeOn(Schedulers.newThread())
@@ -245,6 +247,7 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
             }
             document.setError("Invalid Document Type");
         }
+        document.setDocumentImage(this.documentImageStr);
         operationsManager.onDocumentReceived(document);
     }
 
