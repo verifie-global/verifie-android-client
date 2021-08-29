@@ -147,7 +147,6 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
         d.imgData.order(ByteOrder.nativeOrder());
         d.intValues = new int[d.inputSize * d.inputSize];
 
-        d.tfLite.setNumThreads(NUM_THREADS);
         d.outputLocations = new float[1][NUM_DETECTIONS][4];
         d.outputClasses = new float[1][NUM_DETECTIONS];
         d.outputScores = new float[1][NUM_DETECTIONS];
@@ -157,9 +156,7 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
 
     @Override
     public List<Recognition> recognizeImage(final Bitmap bitmap) {
-        // Log this method so that it can be analyzed with systrace.
-        Trace.beginSection("recognizeImage");
-        Trace.beginSection("preprocessBitmap");
+        LOGGER.d("preprocessBitmap, recognizeImage");
 
         // Preprocess the image data from 0-255 int to normalized float based
         // on the provided parameters.
@@ -181,8 +178,7 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
                 }
             }
         }
-        Trace.endSection(); // preprocessBitmap
-        Trace.beginSection("feed");
+        LOGGER.d("endSection, beginSection: feed");
 
         // Copy the input data into TensorFlow.
         outputLocations = new float[1][NUM_DETECTIONS][4];
@@ -198,10 +194,9 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
         outputMap.put(3, numDetections);
 
         // Run the inference call.
-        Trace.endSection();
-        Trace.beginSection("run");
+        LOGGER.d("endSection, beginSection: run");
         tfLite.runForMultipleInputsOutputs(inputArray, outputMap);
-        Trace.endSection();
+        LOGGER.d("endSection, beginSection: Image recognizing");
 
         // Show the best detections.
         // after scaling them back to the input size.
@@ -231,7 +226,7 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
                             outputScores[0][i],
                             detection));
         }
-        Trace.endSection(); // "recognizeImage"
+        LOGGER.d("endSection = recognizeImage");
         return recognitions;
     }
 
@@ -246,14 +241,5 @@ public class TFLiteObjectDetectionAPIModel implements Classifier {
 
     @Override
     public void close() {
-    }
-
-    public void setNumThreads(int num_threads) {
-        if (tfLite != null) tfLite.setNumThreads(num_threads);
-    }
-
-    @Override
-    public void setUseNNAPI(boolean isChecked) {
-        if (tfLite != null) tfLite.setUseNNAPI(isChecked);
     }
 }
