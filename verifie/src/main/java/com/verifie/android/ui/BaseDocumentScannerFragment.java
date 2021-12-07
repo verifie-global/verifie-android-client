@@ -115,7 +115,9 @@ public abstract class BaseDocumentScannerFragment extends Fragment implements Ca
     public synchronized void onPause() {
         Log.d("onPause ", this + " :class");
 
-        preview.stop();
+        if (preview != null) {
+            preview.stop();
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             handlerThread.quitSafely();
