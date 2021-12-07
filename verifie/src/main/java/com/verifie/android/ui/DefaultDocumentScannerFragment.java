@@ -308,7 +308,9 @@ public final class DefaultDocumentScannerFragment extends BaseDocumentScannerFra
         if (faceDetector != null) {
             faceDetector.release();
         }
-        detector.close();
+        if (detector != null) {
+            detector.close();
+        }
     }
 
     @Override
