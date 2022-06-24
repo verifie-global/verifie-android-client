@@ -266,13 +266,16 @@ public class FaceDetectorGmsFragment extends Fragment {
             Log.w(TAG, "Face detector dependencies are not yet available.");
             setText("Face detector dependencies are not yet available.");
         }
-
+        
+        int height = Resources.getSystem().getDisplayMetrics().heightPixels;
+        int width = Resources.getSystem().getDisplayMetrics().widthPixels;
+        
         mCameraSource = new CameraSource.Builder(context, myFaceDetector)
                 .setFacing(CameraSource.CAMERA_FACING_FRONT)
                 .setAutoFocusEnabled(true)
                 .setRequestedFps(100.0f)
-//                .setRequestedPreviewSize(640, 480)
-                .setRequestedPreviewSize(1920, 1080)
+//                .setRequestedPreviewSize(1920, 1080)
+                .setRequestedPreviewSize(height, width)                
                 .build();
         tensorFaceDetector = new TensorFaceDetector(getActivity());
     }
