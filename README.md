@@ -5,7 +5,7 @@
 
 # Install
 
-**Step 1.** Add the JitPack repository to your build file
+**Step 1.** Add the JitPack repository to your project level build.gradle file
 
 ```gradle
 allprojects {
@@ -20,7 +20,7 @@ allprojects {
 }
 ```
 
-**Step 2.** Add the dependency
+**Step 2.** Add the dependency to your application(module) level build.gradle file
 
 ```gradle
 implementation 'com.github.verifie-global:verifie-android-client:v2.3.0'

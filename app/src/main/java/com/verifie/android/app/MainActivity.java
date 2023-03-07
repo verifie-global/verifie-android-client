@@ -146,15 +146,12 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         config.setTextConfig(textConfig);
 
         verifie = new Verifie(this, config, this);
-        verifie.setIdCardView(new IDCardView() {
-            @Override
-            public View getViewToShow(ActionHandler actionHandler) {
+        verifie.setIdCardView(actionHandler -> {
 //          Return the view you want to add after ID card first page scanning, use action handler to close the layout and remove the view you have added
 //
 //                someBtnOnYourView.setOnClickListener(v -> actionHandler.closeIDCardLayout());
 //                return yourView;
-                return null;
-            }
+            return null;
         });
         verifie.setFaceContainingPercentageInOval(0.6f);
         verifie.start();
