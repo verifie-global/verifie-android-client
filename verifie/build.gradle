@@ -11,7 +11,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 33
         versionCode 1
-        versionName "1.0.4"
+        versionName "2.4.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -53,9 +53,9 @@ publishing {
         bar(MavenPublication) {
             groupId 'com.verifie'
             artifactId 'verifie-android'
-            version '1.0.4'
+            version '2.4.0'
             artifact(sourceJar)
-            artifact("$buildDir/outputs/aar/bar-release.aar")
+            artifact("$buildDir/outputs/aar/verifie-release.aar")
         }
     }
     repositories {
