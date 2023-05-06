@@ -11,7 +11,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 33
         versionCode 1
-        versionName "2.5.0"
+        versionName "2.6.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -50,6 +50,24 @@ task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
     classifier "sources"
 }
+// ./gradlew clean build publish
+
+publishing {
+    publications {
+        bar(MavenPublication) {
+            groupId 'com.verifie'
+            artifactId 'verifie-android'
+            version '2.4.0'
+            artifact(sourceJar)
+            artifact("$buildDir/outputs/aar/verifie-release.aar")
+        }
+    }
+    repositories {
+        maven {
+            url "$buildDir/repo"
+        }
+    }
+}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -86,7 +104,7 @@ dependencies {
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation 'com.google.mlkit:face-mesh-detection:16.0.0-beta1'
-    api files('libs/verifie-release.aar')
+    api project(':aar_wrapper')
 }
 
 repositories {
