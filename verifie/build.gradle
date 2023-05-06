@@ -86,7 +86,7 @@ dependencies {
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation 'com.google.mlkit:face-mesh-detection:16.0.0-beta1'
-    api files('libs/verifie-release.aar')
+    api project(':aar_wrapper')
 }
 
 repositories {

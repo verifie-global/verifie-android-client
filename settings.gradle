@@ -1,1 +1,1 @@
-include ':app', ':verifie'
+include ':app', ':verifie', ':aar_wrapper'
