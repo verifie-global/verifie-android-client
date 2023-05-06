@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/img_doc_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
         android:layout_marginStart="20dp"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="19dp"
@@ -28,6 +28,7 @@
         android:text="@string/passport"
         android:textColor="#2A2A37"
         android:textSize="16sp"
+        android:layout_marginStart="@dimen/_5sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/img_arrow_right"
         app:layout_constraintStart_toEndOf="@+id/img_doc_icon"
@@ -54,9 +55,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginStart="16dp"
-        android:layout_marginLeft="1dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
         android:background="#DAD6E5"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

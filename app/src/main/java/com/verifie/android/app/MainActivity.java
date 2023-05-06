@@ -24,6 +24,7 @@ import com.verifie.android.VerifieColorConfig;
 import com.verifie.android.VerifieConfig;
 import com.verifie.android.VerifieTextConfig;
 import com.verifie.android.api.model.res.Document;
+import com.verifie.android.api.model.res.LivenessResult;
 import com.verifie.android.api.model.res.Score;
 import com.verifie.android.ui.IDCardView;
 
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     private TextView nextPage;
     private TextView predictedGender;
     private TextView predictedAge;
+    private View documentInfoContent;
     private int docType;
     private boolean isVerifyStarted = false;
 
@@ -78,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         faceScore = findViewById(R.id.face_score);
         facialLiveness = findViewById(R.id.facial_liveness);
         nextPage = findViewById(R.id.next_page);
+        documentInfoContent = findViewById(R.id.document_info_content);
         findViewById(R.id.content_layout).setVisibility(View.INVISIBLE);
     }
 
@@ -88,12 +91,12 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
             if (bundle != null && bundle.get(Constants.DocTypes.KEY) != null) {
                 docType = bundle.getInt(Constants.DocTypes.KEY, Constants.DocTypes.PASSPORT);
             } else {
-//                docType = Constants.DocTypes.PASSPORT;
-                docType = Constants.DocTypes.NATIONAL_ID;
+                docType = Constants.DocTypes.PASSPORT;
+//                docType = Constants.DocTypes.NATIONAL_ID;
             }
         } else {
-//            docType = Constants.DocTypes.PASSPORT;
-            docType = Constants.DocTypes.NATIONAL_ID;
+            docType = Constants.DocTypes.PASSPORT;
+//            docType = Constants.DocTypes.NATIONAL_ID;
         }
     }
 
@@ -116,8 +119,8 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         VerifieColorConfig colorConfig = new VerifieColorConfig();
         colorConfig.setDocCropperFrameColor(Color.WHITE);
 
-        VerifieConfig config = new VerifieConfig(this, "licenseKey", "personId");
-
+//        VerifieConfig config = new VerifieConfig(this, "licenseKey", "personId");
+        VerifieConfig config = new VerifieConfig(this, "5d3f2e38-fe7c-43c6-b532-db9b57e674f8", "55555");
         config.setColorConfig(colorConfig);
         VerifieTextConfig textConfig = new VerifieTextConfig(this);
         config.setDocType(DocType.DOC_TYPE_PASSPORT);
@@ -136,6 +139,12 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
                 text = getString(R.string.residence_permit_card);
                 pageInfo = getString(R.string.page_info_id_card);
                 scanInfo = getString(R.string.scan_info_id_card);
+                break;
+            case Constants.DocTypes.LIVENESS_CHECK:
+                config.setDocType(DocType.DOC_TYPE_LIVE_NESS_CHECK);
+                text = "";
+                pageInfo = "";
+                scanInfo = "";
                 break;
         }
         textConfig.setPageTitle(text);
@@ -181,19 +190,11 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
     }
 
     private void showDocuments() {
-        if (document == null || score == null) {
+        if (/*document == null || */score == null) {
             if (isVerifyStarted) {
                 finish();
             }
             return;
-        }
-
-        if (document.getError() != null) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Error")
-                    .setMessage(document.getError())
-                    .setPositiveButton("OK", null)
-                    .show();
         }
 
         if (documentImageBase64 != null && !documentImageBase64.isEmpty()) {
@@ -206,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
             documentImage.setVisibility(View.GONE);
         }
 
-        if (score.getBase64Image() != null && !score.getBase64Image().isEmpty()) {
+        if (score != null && score.getBase64Image() != null && !score.getBase64Image().isEmpty()) {
             byte[] decodedImage = Base64.decode(score.getBase64Image(), Base64.DEFAULT);
             Bitmap bitmap = BitmapFactory.decodeByteArray(decodedImage, 0, decodedImage.length);
 
@@ -217,20 +218,39 @@ public class MainActivity extends AppCompatActivity implements VerifieCallback {
         }
 
         findViewById(R.id.content_layout).setVisibility(View.VISIBLE);
+        if (score != null) {
+            setScoreResult();
+        }
+
+        if (document != null) {
+            documentInfoContent.setVisibility(View.VISIBLE);
+            setSpannableText(documenttType, "Document type", document.getDocumentType());
+            setSpannableText(documentNumber, "Document number", document.getDocumentNumber());
+            setSpannableText(birthDate, "Birth date", document.getBirthDate());
+            setSpannableText(expiryDate, "Expiry date", document.getExpiryDate());
+            setSpannableText(firstName, "First Name", document.getFirstname());
+            setSpannableText(lastName, "Last Name", document.getLastname());
+            setSpannableText(gender, "Gender", document.getGender());
+            setSpannableText(nationality, "Nationality", document.getNationality());
+            setSpannableText(country, "Country", document.getCountry());
+            setSpannableText(documentValid, "Document valid", String.valueOf(document.isDocumentValid()));
+            setSpannableText(nextPage, "Next Page", String.valueOf(document.isNextPage()));
+            if (document.getError() != null) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Error")
+                        .setMessage(document.getError())
+                        .setPositiveButton("OK", null)
+                        .show();
+            }
+        } else {
+            documentInfoContent.setVisibility(View.GONE);
+        }
+        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+    }
+
+    private void setScoreResult() {
         setSpannableText(faceScore, "Score", String.valueOf(score.getFacialScore()));
         setSpannableText(facialLiveness, "Liveness", String.valueOf(score.isFacialLiveness()));
-        setSpannableText(documenttType, "Document type", document.getDocumentType());
-        setSpannableText(documentNumber, "Document number", document.getDocumentNumber());
-        setSpannableText(birthDate, "Birth date", document.getBirthDate());
-        setSpannableText(expiryDate, "Expiry date", document.getExpiryDate());
-        setSpannableText(firstName, "First Name", document.getFirstname());
-        setSpannableText(lastName, "Last Name", document.getLastname());
-        setSpannableText(gender, "Gender", document.getGender());
-        setSpannableText(nationality, "Nationality", document.getNationality());
-        setSpannableText(country, "Country", document.getCountry());
-        setSpannableText(documentValid, "Document valid", String.valueOf(document.isDocumentValid()));
-        setSpannableText(nextPage, "Next Page", String.valueOf(document.isNextPage()));
-        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
     }
 
     private void setSpannableText(TextView textView, String prefix, String suffix) {

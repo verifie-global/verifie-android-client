@@ -7,5 +7,6 @@ public interface Constants {
         int DRIVING_LICENSE = 1;
         int NATIONAL_ID = 2;
         int RESIDENCE_PERMIT = 3;
+        int LIVENESS_CHECK = 4;
     }
 }
