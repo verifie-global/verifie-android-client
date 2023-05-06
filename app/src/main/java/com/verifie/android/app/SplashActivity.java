@@ -16,18 +16,12 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(Color.WHITE);
-        }
+        getWindow().setStatusBarColor(Color.WHITE);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent mainIntent = new Intent(SplashActivity.this, MainActivity.class);
-
-                startActivity(mainIntent);
-                finish();
-            }
+        new Handler().postDelayed(() -> {
+            Intent mainIntent = new Intent(SplashActivity.this, IdentityVerificationActivity.class);
+            startActivity(mainIntent);
+            finish();
         }, SPLASH_DISPLAY_LENGTH);
     }
 }

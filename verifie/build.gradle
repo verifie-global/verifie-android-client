@@ -8,10 +8,10 @@ android {
     compileSdkVersion 33
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 33
         versionCode 1
-        versionName "2.4.0"
+        versionName "2.5.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -19,11 +19,15 @@ android {
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
         }
+
+        aarMetadata {
+            minCompileSdk = 19
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -45,24 +49,6 @@ android {
 task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
     classifier "sources"
-}
-// ./gradlew clean build publish
-
-publishing {
-    publications {
-        bar(MavenPublication) {
-            groupId 'com.verifie'
-            artifactId 'verifie-android'
-            version '2.4.0'
-            artifact(sourceJar)
-            artifact("$buildDir/outputs/aar/verifie-release.aar")
-        }
-    }
-    repositories {
-        maven {
-            url "$buildDir/repo"
-        }
-    }
 }
 
 dependencies {
@@ -98,6 +84,9 @@ dependencies {
     api 'cz.adaptech.android:tesseract4android:2.1.0'
     api "androidx.core:core-ktx:1.9.0"
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    implementation 'com.google.mlkit:face-mesh-detection:16.0.0-beta1'
+    api files('libs/verifie-release.aar')
 }
 
 repositories {

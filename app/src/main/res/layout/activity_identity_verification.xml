@@ -89,8 +89,23 @@
             android:id="@+id/national_id_layout_item"
             layout="@layout/layout_document_item" />
 
+<!--        <include-->
+<!--            android:id="@+id/residence_permit_layout_item"-->
+<!--            layout="@layout/layout_document_item" />-->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#ECEBEB"
+            android:text="@string/other_flows"
+            android:textAllCaps="true"
+            android:textColor="#6E687E"
+            android:paddingTop="@dimen/_10sdp"
+            android:paddingHorizontal="@dimen/_10sdp"
+            android:paddingBottom="@dimen/_5sdp"/>
+
         <include
-            android:id="@+id/residence_permit_layout_item"
+            android:id="@+id/liveness_check_layout_item"
             layout="@layout/layout_document_item" />
     </LinearLayout>
 </LinearLayout>

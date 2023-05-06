@@ -24,6 +24,13 @@
         </activity>
 
         <activity
+            android:name=".IdentityVerificationActivity"
+            android:theme="@style/NoActionBar" />
+        <activity
+            android:name=".ScanDocumentActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
             android:name=".MainActivity"
             android:theme="@style/NoActionBar" />
 

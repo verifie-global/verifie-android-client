@@ -19,4 +19,8 @@
     <string name="images">Images</string>
     <string name="images_data">Images Data</string>
     <string name="document_info">Document Info</string>
+    <string name="now_place_your_phone_directly_on_top_of_your_document_so_we_can_connect_securely">Place your phone directly on top of your document as shown in the picture below.</string>
+    <string name="scan_document">Scan Document</string>
+    <string name="other_flows">Other flows</string>
+    <string name="check_liveness">Check Liveness</string>
 </resources>
