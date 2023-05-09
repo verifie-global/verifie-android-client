@@ -1,7 +1,7 @@
 
 # Verifie Android Client
 
-[![](https://jitpack.io/v/verifie-global/verifie-android.svg)](https://jitpack.io/#verifie-global/verifie-android)
+[![](https://jitpack.io/v/verifie-global/verifie-android.svg)](https://jitpack.io/#verifie-global/verifie-android-client)
 
 # Install
 
@@ -63,8 +63,8 @@ Verifie verifie = new Verifie(this, config, new VerifieCallback() {
             public View getViewToShow(ActionHandler actionHandler) {
             Return the view you want to add after ID card first page scanning, use action handler to close the layout and remove the view you have added
                 someBtnOnYourView.setOnClickListener(v -> actionHandler.closeIDCardLayout());
-                return yourView;
-                return null;
+                    return yourView;
+                    return null;
             }
         });
         verifie.setFaceContainingPercentageInOval(0.5f);
