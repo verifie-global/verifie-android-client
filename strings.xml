@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">verifie</string>
+    <string name="permission_camera_rationale">Camera permission is needed this app to work</string>
+    <string name="move_away">"Move the phone away"</string>
+    <string name="move_close">"Move the phone closer"</string>
+    <string name="hold_still">Hold still</string>
+    <string name="recommendations">Recommendations</string>
+    <string name="light_face_evenly">Light Face Evenly</string>
+    <string name="great">Great!</string>
+    <string name="no_glasses">No Glasses</string>
+    <string name="no_shadow">No Shadow</string>
+    <string name="no_flash">No Flash</string>
+    <string name="continue_key">Continue</string>
+    <string name="position_your_face_in_the_oval">Position your face in the oval</string>
+
+    <string name="scanned">Scanned!</string>
+    <string name="something_went_wrong">Something went wrong, please try again.</string>
+    <string name="look_straight">Look straight</string>
+
+
+    <!--    FACE SMASH -->
+    <string name="pref_category_key_camera" translatable="false">pckc</string>
+    <string name="pref_category_title_camera" translatable="false">Camera</string>
+    <string name="pref_key_rear_camera_preview_size" translatable="false">rcpvs</string>
+    <string name="pref_key_rear_camera_picture_size" translatable="false">rcpts</string>
+    <string name="pref_key_front_camera_preview_size" translatable="false">fcpvs</string>
+    <string name="pref_key_front_camera_picture_size" translatable="false">fcpts</string>
+    <string name="pref_key_camerax_rear_camera_target_resolution" translatable="false">crctas</string>
+    <string name="pref_key_camerax_front_camera_target_resolution" translatable="false">cfctas</string>
+    <string name="pref_key_camera_live_viewport" translatable="false">clv</string>
+    <string name="pref_title_rear_camera_preview_size" translatable="false">Rear camera preview size</string>
+    <string name="pref_title_front_camera_preview_size" translatable="false">Front camera preview size</string>
+    <string name="pref_title_camerax_rear_camera_target_resolution" translatable="false">CameraX rear camera target resolution</string>
+    <string name="pref_title_camerax_front_camera_target_resolution" translatable="false">CameraX front camera target resolution</string>
+    <string name="pref_title_camera_live_viewport" translatable="false">Enable live viewport</string>
+    <string name="pref_summary_camera_live_viewport" translatable="false">Do not block camera preview drawing on detection</string>
+
+    <string name="pref_group_title_face_mesh" translatable="false">Face Mesh Detection</string>
+    <string name="pref_title_face_mesh_use_case" translatable="false">Use Case</string>
+    <string name="pref_key_face_mesh_use_case" translatable="false">face_mesh_use_case</string>
+
+    <string name="identity_verification">Identity Verification</string>
+    <string name="passport">Passport</string>
+    <string name="you_will_take_a_picture_of_it_in_the_next_step">You will take a picture of it in the next step.</string>
+    <string name="select_a_document">Select a Document</string>
+    <string name="driving_license">Driving License</string>
+    <string name="national_identity_card">National Identity Card</string>
+    <string name="residence_permit_card">Residence Permit Card</string>
+
+    <string name="page_info_passport">Passport Face Page</string>
+    <string name="page_info_id_card">Scan Identity Card Front</string>
+    <string name="page_info_residence_card">Residence Permit Card Page</string>
+
+    <string name="scan_info_passport">Place your document within the frame until it is captured automatically</string>
+    <string name="scan_info_id_card">Place your document within the frame until it is captured automatically</string>
+    <string name="scan_info_residence_card">Place your document within the frame until it is captured automatically</string>
+    <string name="now_place_your_phone_directly_on_top_of_your_document_so_we_can_connect_securely">Place your phone directly on top of your document as shown in the picture below.</string>
+    <string name="scan_document">Scan Document</string>
+    <string name="scan_backside_of_doc">Scan Identity Card Back</string>
+    <string name="scan_backside_of_doc_info">Place yor document within the frame until it is captured automatically</string>
+    <string name="verification_result">Verification Result</string>
+    <string name="images">Images</string>
+    <string name="images_data">Images Data</string>
+    <string name="document_info">Document Info</string>
+    <string name="other_flows">Other flows</string>
+    <string name="check_liveness">Check Liveness</string>
+
+</resources>
