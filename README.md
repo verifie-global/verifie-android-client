@@ -84,3 +84,6 @@ config.setFaceDetectorFragment(YourFaceDetectorFragment.class);
 ```
 
 ```YourDocumentScannerFragment``` and ```YourFaceDetectorFragment``` should extend ```com.verifie.android.ui.BaseDocumentScannerFragment```
+# Localization
+
+SDK texts vary depending on the application language (Locale). 
