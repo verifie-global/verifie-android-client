@@ -7,13 +7,14 @@ repositories {
 
 android {
 
-    compileSdkVersion 33
+    namespace = 'com.verifie.android.app'
+    compileSdkVersion 34
 
     defaultConfig {
         applicationId "com.verifie.android.app"
 
-        minSdkVersion 21
-        targetSdkVersion 33
+        minSdkVersion 26
+        targetSdkVersion 34
 
         versionCode 1
         versionName "1.0.4"
@@ -44,5 +45,5 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.github.verifie-global:verifie-android-client:v2.7.3'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
 }
