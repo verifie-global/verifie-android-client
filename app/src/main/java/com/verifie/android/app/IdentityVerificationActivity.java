@@ -4,11 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import java.util.Objects;
 
 public class IdentityVerificationActivity extends BaseActivity implements View.OnClickListener {
     @Override
@@ -40,23 +41,15 @@ public class IdentityVerificationActivity extends BaseActivity implements View.O
     @Override
     public void onClick(View v) {
         int docType = -1;
-        switch (v.getId()) {
-            case R.id.passport_layout_item:
-                docType = Constants.DocTypes.PASSPORT;
-                break;
-            /*case R.id.driving_license_layout_item:
-                docType = Constants.DocTypes.DRIVING_LICENSE;
-                break;*/
-            case R.id.national_id_layout_item:
-                docType = Constants.DocTypes.NATIONAL_ID;
-                break;
-            /*case R.id.residence_permit_layout_item:
-                docType = Constants.DocTypes.RESIDENCE_PERMIT;
-                break;*/
-            case R.id.liveness_check_layout_item:
-                docType = Constants.DocTypes.LIVENESS_CHECK;
-                break;
+
+        if (Objects.equals(v.getId(), R.id.passport_layout_item)) {
+            docType = Constants.DocTypes.PASSPORT;
+        } else if (Objects.equals(v.getId(), R.id.national_id_layout_item)) {
+            docType = Constants.DocTypes.NATIONAL_ID;
+        } else if (Objects.equals(v.getId(), R.id.liveness_check_layout_item)) {
+            docType = Constants.DocTypes.LIVENESS_CHECK;
         }
+
         if (docType != -1) {
             openScannerWithId(docType);
         }

@@ -1,11 +1,11 @@
 package com.verifie.android.app;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class ScanDocumentActivity extends AppCompatActivity {
     private ImageView imgDoc;
@@ -34,18 +34,8 @@ public class ScanDocumentActivity extends AppCompatActivity {
             }
         }
         final int finalDocType = docType;
-        findViewById(R.id.btn_continue).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openScannerWithId(finalDocType);
-            }
-        });
-        findViewById(R.id.btn_back).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        findViewById(R.id.btn_continue).setOnClickListener(v -> openScannerWithId(finalDocType));
+        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
     }
 
     private void openScannerWithId(int docType) {
@@ -56,10 +46,10 @@ public class ScanDocumentActivity extends AppCompatActivity {
     }
 
     private void setImageId() {
-        imgDoc.setImageResource(R.drawable.ic_id_card_scan);
+        imgDoc.setImageResource(com.verifie.android.R.drawable.ic_id_card_scan);
     }
 
     private void setImagePassport() {
-        imgDoc.setImageResource(R.drawable.ic_passport_scan);
+        imgDoc.setImageResource(com.verifie.android.R.drawable.ic_passport_scan);
     }
 }
