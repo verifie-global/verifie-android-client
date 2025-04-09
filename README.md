@@ -2,7 +2,7 @@
 # Verifie Android Client
 
 
-[![](https://jitpack.io/v/verifie-global/verifie-android-client.svg)](https://jitpack.io/#verifie-global/verifie-android-client/v2.7.6)
+[![](https://jitpack.io/v/verifie-global/verifie-android-client.svg)](https://jitpack.io/#verifie-global/verifie-android-client/2.8.3)
 
 # Install
 
@@ -24,7 +24,7 @@ allprojects {
 **Step 2.** Add the dependency to your application(module) level build.gradle file
 
 ```gradle
-implementation 'com.github.verifie-global:verifie-android-client:v2.7.6'
+implementation 'com.github.verifie-global:verifie-android-client:2.8.3'
 ```
 
 # Usage
